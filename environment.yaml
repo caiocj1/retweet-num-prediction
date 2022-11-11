@@ -1,0 +1,17 @@
+name: retweet-env
+channels:
+  - anaconda
+  - conda-forge
+  - pytorch
+  - jmcmurray
+dependencies:
+  - numpy
+  - pytorch
+  - torchvision
+  - pytorch-lightning
+  - tensorboard
+  - os
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - jupyter

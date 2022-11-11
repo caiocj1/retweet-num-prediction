@@ -1,0 +1,6 @@
+lightning_logs/
+MNIST/
+.idea/
+__pycache__/
+data/
+checkpoints/

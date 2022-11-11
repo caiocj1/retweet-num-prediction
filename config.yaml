@@ -1,0 +1,11 @@
+DatasetParams:
+  reduced_dims: 53
+
+ModelParams:
+  layer_width: 256
+  num_layers: 5
+  dropout: False
+
+TrainingParams:
+  num_splits: 10
+  split_seed: 12345
