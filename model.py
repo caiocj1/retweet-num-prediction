@@ -6,10 +6,10 @@ import yaml
 from yaml import SafeLoader
 from collections import OrderedDict
 
-class ForestCoverModel(LightningModule):
+class RetweetModel(LightningModule):
 
     def __init__(self):
-        super(ForestCoverModel, self).__init__()
+        super(RetweetModel, self).__init__()
         self.read_config()
         self.build_model()
 

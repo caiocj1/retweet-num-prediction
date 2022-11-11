@@ -2,8 +2,8 @@ import argparse
 import os
 import yaml
 
-from model import ForestCoverModel
-from dataset import ForestCoverDataModule
+from model import RetweetModel
+from dataset import RetweetDataModule
 
 import torch.cuda
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     training_params = params['TrainingParams']
 
     # Initialize data module
-    data_module = ForestCoverDataModule(
+    data_module = RetweetDataModule(
         split_seed=training_params['split_seed'],
         num_splits=training_params['num_splits'],
         batch_size=32,
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         print('Training on split', k, '...')
 
         # Initialize new model and setup data module
-        model = ForestCoverModel()
+        model = RetweetModel()
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints

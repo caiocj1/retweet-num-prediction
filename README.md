@@ -1,7 +1,4 @@
-# Forest Cover Prediction
-
-Repository for university Kaggle challenge: https://www.kaggle.com/competitions/map553-2022/overview.
-
+# Retweets Prediction
 
 
 To create the environment, run ``conda env create -f environment.yml``.

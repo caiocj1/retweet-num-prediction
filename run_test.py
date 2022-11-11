@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import yaml
 
-from model import ForestCoverModel
-from dataset import ForestCoverDataModule
+from model import RetweetModel
+from dataset import RetweetDataModule
 
 import torch
 import torch.cuda
@@ -28,9 +28,9 @@ if __name__ == '__main__':
         params = yaml.load(f, Loader=yaml.SafeLoader)
 
     # Model selection
-    model = ForestCoverModel()
+    model = RetweetModel()
 
-    data_module = ForestCoverDataModule(
+    data_module = RetweetDataModule(
         batch_size=32,
         num_workers=8
     )

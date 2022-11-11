@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from typing import Optional
 from collections import defaultdict
 
-class ForestCoverDataModule(LightningDataModule):
+class RetweetDataModule(LightningDataModule):
     def __init__(self,
             split_seed: int = 12345,  # split needs to be always the same for correct cross validation
             num_splits: int = 10,
