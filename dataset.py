@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import yaml
+import ast
 from yaml import SafeLoader
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
@@ -18,7 +19,7 @@ class RetweetDataModule(LightningDataModule):
         super().__init__()
         dataset_path = os.getenv('DATASET_PATH')
         self.train_path = os.path.join(dataset_path, 'train.csv')
-        self.test_path = os.path.join(dataset_path, 'test-full.csv')
+        self.test_path = os.path.join(dataset_path, 'evaluation.csv')
 
         # Save hyperparemeters
         self.save_hyperparameters(logger=False)
@@ -27,20 +28,29 @@ class RetweetDataModule(LightningDataModule):
         self.read_config()
 
         # Declare data
-        self.data_train: Optional[Dataset] = None
-        self.data_val: Optional[Dataset] = None
+        self.data_train = None
+        self.data_val = None
+        self.data_predict = None
 
         # Prepare split
         self.kf = KFold(n_splits=self.hparams.num_splits, shuffle=True, random_state=self.hparams.split_seed)
 
         # Get training set
         self.train_df = pd.read_csv(self.train_path)
-        self.train_df_input = self.train_df.drop(['Id', 'Soil_Type15', 'Cover_Type'], axis=1)
+
+        self.train_df_input = self.train_df.drop(['TweetID', 'timestamp', 'mentions', 'retweets_count', 'text'], axis=1)
+
+        self.train_df_input.urls = self.train_df_input.urls.apply(ast.literal_eval)
+        self.train_df_input.urls = self.train_df_input.urls.apply(len)
+
+        self.train_df_input.hashtags = self.train_df_input.hashtags.apply(ast.literal_eval)
+        self.train_df_input.hashtags = self.train_df_input.hashtags.apply(len)
+
         self.train_mean = self.train_df_input.values.mean(0)
         self.train_std = self.train_df_input.values.std(0)
 
         # Fit eventual PCA
-        if self.reduced_dims:
+        if self.apply_pca:
             self.pca = PCA(self.reduced_dims)
             train_df_normalized = (self.train_df_input.values - self.train_mean) / self.train_std
             self.pca.fit(train_df_normalized)
@@ -51,6 +61,7 @@ class RetweetDataModule(LightningDataModule):
             params = yaml.load(f, Loader=SafeLoader)
         dataset_params = params['DatasetParams']
 
+        self.apply_pca = dataset_params['apply_pca']
         self.reduced_dims = dataset_params['reduced_dims']
 
     def setup(self, stage: str = None, k: int = 0):
@@ -76,8 +87,8 @@ class RetweetDataModule(LightningDataModule):
             val_X = dict(enumerate(val_X))
 
             # Get labels
-            train_y = dict(enumerate(self.train_df.iloc[train_indexes]['Cover_Type'].values - 1))
-            val_y = dict(enumerate(self.train_df.iloc[val_indexes]['Cover_Type'].values - 1))
+            train_y = dict(enumerate(self.train_df.iloc[train_indexes]['retweets_count'].values))
+            val_y = dict(enumerate(self.train_df.iloc[val_indexes]['retweets_count'].values))
 
             # Get dict
             train_dict = defaultdict()

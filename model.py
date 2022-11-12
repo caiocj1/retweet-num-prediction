@@ -20,6 +20,7 @@ class RetweetModel(LightningModule):
         dataset_params = params['DatasetParams']
         model_params = params['ModelParams']
 
+        self.apply_pca = dataset_params['apply_pca']
         self.reduced_dims = dataset_params['reduced_dims']
 
         self.layer_width = model_params['layer_width']
@@ -27,7 +28,10 @@ class RetweetModel(LightningModule):
         self.dropout = model_params['dropout']
 
     def build_model(self):
-        self.input = nn.Linear(self.reduced_dims, self.layer_width)
+        if self.apply_pca:
+            self.input = nn.Linear(self.reduced_dims, self.layer_width)
+        else:
+            self.input = nn.Linear(7, self.layer_width)
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
@@ -35,7 +39,7 @@ class RetweetModel(LightningModule):
             if self.dropout:
                 hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout()
         self.hidden_layers = nn.Sequential(hidden_layers_dict)
-        self.output = nn.Linear(self.layer_width, 7)
+        self.output = nn.Linear(self.layer_width, 1)
         self.relu = nn.ReLU()
 
     def training_step(self, batch, batch_idx):
@@ -63,11 +67,11 @@ class RetweetModel(LightningModule):
         return loss
 
     def _shared_step(self, batch):
-        logits = self.forward(batch)
+        prediction = self.forward(batch)
 
-        loss = self.calc_loss(logits, batch[1])
+        loss = self.calc_loss(prediction, batch[1])
 
-        metrics = self.calc_metrics(logits, batch[1])
+        metrics = self.calc_metrics(prediction, batch[1])
 
         return loss, metrics
 
@@ -76,32 +80,28 @@ class RetweetModel(LightningModule):
 
         encoding = self.hidden_layers(self.relu(encoding))
 
-        # Get logits
-        logits = self.output(encoding)
+        prediction = self.output(encoding)
 
-        return logits
+        return prediction
 
     def calc_loss(self, prediction, target):
-        ce_loss = nn.CrossEntropyLoss(reduction='none')
+        l1_loss = nn.L1Loss(reduction='none')
 
-        loss = ce_loss(prediction, target)
+        loss = l1_loss(prediction, target)
 
         return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [128], gamma=0.1)
+        # lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [128], gamma=0.1)
         # lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [64, 128, 192], gamma=0.5)
 
-        return [optimizer], [lr_scheduler]
+        return [optimizer], []
 
-    def calc_metrics(self, logits, target):
+    def calc_metrics(self, prediction, target):
         metrics = {}
 
-        prediction = torch.argmax(logits, dim=1)
-        batch_size = len(logits)
-
-        metrics['accuracy'] = (prediction == target).sum() / batch_size
+        metrics['mae'] = torch.abs(prediction - target).mean()
 
         return metrics
 

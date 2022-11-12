@@ -1,9 +1,10 @@
 DatasetParams:
-  reduced_dims: 53
+  apply_pca: False
+  reduced_dims: 5
 
 ModelParams:
-  layer_width: 256
-  num_layers: 5
+  layer_width: 128
+  num_layers: 3
   dropout: False
 
 TrainingParams:

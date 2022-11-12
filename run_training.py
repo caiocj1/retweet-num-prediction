@@ -39,11 +39,12 @@ if __name__ == '__main__':
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints
-        logger = TensorBoardLogger('.', version=args.version + '_split=' + str(k))
-        model_ckpt = ModelCheckpoint(dirpath=f'lightning_logs/{args.version}/checkpoints',
+        version = args.version + '_split=' + str(k)
+        logger = TensorBoardLogger('.', version=version)
+        model_ckpt = ModelCheckpoint(dirpath=f'lightning_logs/{args.version}_CV/checkpoints',
                                      filename='{epoch}-split=%d' % k,
                                      save_top_k=1,
-                                     monitor='accuracy_val',
+                                     monitor='mae_val',
                                      mode='max',
                                      save_weights_only=True)
         lr_monitor = LearningRateMonitor()
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         trainer = Trainer(accelerator='auto',
                           devices=1 if torch.cuda.is_available() else None,
                           max_epochs=256,
-                          val_check_interval=300,
+                          val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
         trainer.fit(model, data_module)
