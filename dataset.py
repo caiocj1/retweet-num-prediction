@@ -102,8 +102,14 @@ class RetweetDataModule(LightningDataModule):
 
         elif stage == 'predict':
             test_full = pd.read_csv(self.test_path)
-            self.test_ids = test_full['Id']
-            test_full = test_full.drop(['Id', 'Soil_Type15'], axis=1)
+            self.test_ids = test_full['TweetID']
+            test_full = test_full.drop(['TweetID', 'timestamp', 'mentions', 'text'], axis=1)
+
+            test_full.urls = test_full.urls.apply(ast.literal_eval)
+            test_full.urls = test_full.urls.apply(len)
+
+            test_full.hashtags = test_full.hashtags.apply(ast.literal_eval)
+            test_full.hashtags = test_full.hashtags.apply(len)
 
             test_X = (test_full.values - self.train_mean) / self.train_std
             if hasattr(self, 'pca'):
