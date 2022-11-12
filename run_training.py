@@ -45,14 +45,14 @@ if __name__ == '__main__':
                                      filename='{epoch}-split=%d' % k,
                                      save_top_k=1,
                                      monitor='mae_val',
-                                     mode='max',
+                                     mode='min',
                                      save_weights_only=True)
         lr_monitor = LearningRateMonitor()
 
         # Trainer
         trainer = Trainer(accelerator='auto',
                           devices=1 if torch.cuda.is_available() else None,
-                          max_epochs=256,
+                          max_epochs=32,
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
