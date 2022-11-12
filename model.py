@@ -80,7 +80,7 @@ class RetweetModel(LightningModule):
 
         encoding = self.hidden_layers(self.relu(encoding))
 
-        prediction = self.output(encoding)
+        prediction = torch.squeeze(self.output(encoding))
 
         return prediction
 
