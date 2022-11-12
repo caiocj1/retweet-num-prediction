@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
         test_results = trainer.predict(model, data_module, ckpt_path=ckpt_path, return_predictions=True)
 
-        test_results_df = pd.DataFrame(data={'Cover_Type': torch.argmax(torch.cat(test_results), dim=1).numpy() + 1})
+        test_results_df = pd.DataFrame(data={'retweets_count': torch.argmax(torch.cat(test_results), dim=1).numpy() + 1})
         test_ids = pd.DataFrame(data_module.test_ids)
 
         submission = pd.concat([test_ids, test_results_df], axis=1)
