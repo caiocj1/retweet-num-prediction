@@ -37,7 +37,7 @@ class RetweetModel(LightningModule):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
             hidden_layers_dict['relu' + str(i + 1)] = nn.ReLU()
             if self.dropout:
-                hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout(p=0.2)
+                hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout(p=0.25)
         self.hidden_layers = nn.Sequential(hidden_layers_dict)
         self.output = nn.Linear(self.layer_width, 1)
         self.relu = nn.ReLU()
@@ -93,7 +93,7 @@ class RetweetModel(LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [12, 24], gamma=0.2)
+        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
         #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
         return [optimizer], [lr_scheduler]

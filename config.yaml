@@ -4,7 +4,7 @@ DatasetParams:
 
 ModelParams:
   layer_width: 128
-  num_layers: 5
+  num_layers: 3
   dropout: True
 
 TrainingParams:
