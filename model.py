@@ -82,10 +82,10 @@ class RetweetModel(LightningModule):
 
         prediction = torch.squeeze(self.output(encoding))
 
-        return prediction.float()
+        return prediction
 
     def calc_loss(self, prediction, target):
-        loss_func = nn.MSELoss(reduction='none')
+        loss_func = nn.L1Loss(reduction='none')
 
         loss = loss_func(prediction, target)
 
