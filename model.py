@@ -86,6 +86,7 @@ class RetweetModel(LightningModule):
 
     def calc_loss(self, prediction, target):
         loss_func = nn.MSELoss(reduction='none')
+        print('Loss function: ' + str(loss_func))
 
         loss = loss_func(prediction, target)
 
