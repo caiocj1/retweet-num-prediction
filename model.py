@@ -85,7 +85,7 @@ class RetweetModel(LightningModule):
         return prediction
 
     def calc_loss(self, prediction, target):
-        loss_func = nn.SmoothL1Loss(reduction='none')
+        loss_func = nn.L1Loss(reduction='none')
 
         loss = loss_func(prediction.float(), target.float())
 
@@ -93,8 +93,8 @@ class RetweetModel(LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
-        #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+        #lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
         return [optimizer], [lr_scheduler]
 
