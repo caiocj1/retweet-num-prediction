@@ -92,7 +92,7 @@ class RetweetModel(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
         #lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
         lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
 
