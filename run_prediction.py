@@ -4,15 +4,12 @@ import os
 import pandas as pd
 import yaml
 
-from model import RetweetModel
+from models.no_text_mlp import NoTextMLPModel
 from dataset import RetweetDataModule
 
-import torch
 import torch.cuda
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
-from pytorch_lightning.loggers import TensorBoardLogger
 
 if __name__ == '__main__':
     # Arguments
@@ -27,7 +24,7 @@ if __name__ == '__main__':
         params = yaml.load(f, Loader=yaml.SafeLoader)
 
     # Model selection
-    model = RetweetModel()
+    model = NoTextMLPModel()
 
     data_module = RetweetDataModule(
         batch_size=32,

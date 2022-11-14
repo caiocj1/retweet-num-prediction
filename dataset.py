@@ -1,4 +1,6 @@
+import gensim.models
 import pandas as pd
+import numpy as np
 import os
 import yaml
 import ast
@@ -49,6 +51,10 @@ class RetweetDataModule(LightningDataModule):
         self.train_mean = self.train_df_input.values.mean(0)
         self.train_std = self.train_df_input.values.std(0)
 
+        # Load word2vec
+        if self.apply_w2v:
+            self.word2vec = gensim.models.Word2Vec.load('models/word2vec.model')
+
         # Fit eventual PCA
         if self.apply_pca:
             self.pca = PCA(self.reduced_dims)
@@ -61,6 +67,7 @@ class RetweetDataModule(LightningDataModule):
             params = yaml.load(f, Loader=SafeLoader)
         dataset_params = params['DatasetParams']
 
+        self.apply_w2v = dataset_params['apply_w2v']
         self.apply_pca = dataset_params['apply_pca']
         self.reduced_dims = dataset_params['reduced_dims']
 
@@ -93,9 +100,17 @@ class RetweetDataModule(LightningDataModule):
             # Get dict
             train_dict = defaultdict()
             val_dict = defaultdict()
+            train_text = self.train_df['text'].iloc[train_indexes]
+            val_text = self.train_df['text'].iloc[val_indexes]
             for i in range(len(train_y)):
+                if hasattr(self, 'word2vec'):
+                    text_vec = self.word2vec.wv[train_text.iloc[i].split(' ')].mean(0)
+                    train_X[i] = np.concatenate([train_X[i], text_vec])
                 train_dict[i] = (train_X[i], train_y[i])
             for i in range(len(val_y)):
+                if hasattr(self, 'word2vec'):
+                    text_vec = self.word2vec.wv[val_text.iloc[i].split(' ')].mean(0)
+                    val_X[i] = np.concatenate([val_X[i], text_vec])
                 val_dict[i] = (val_X[i], val_y[i])
 
             self.data_train, self.data_val = train_dict, val_dict

@@ -5,21 +5,24 @@ import os
 import yaml
 from yaml import SafeLoader
 from collections import OrderedDict
+import gensim
 
-class RetweetModel(LightningModule):
+class Word2VecMLPModel(LightningModule):
 
     def __init__(self):
-        super(RetweetModel, self).__init__()
+        super(Word2VecMLPModel, self).__init__()
         self.read_config()
+
         self.build_model()
 
     def read_config(self):
-        config_path = os.path.join(os.getcwd(), 'config.yaml')
+        config_path = os.path.join(os.getcwd(), './config.yaml')
         with open(config_path) as f:
             params = yaml.load(f, Loader=SafeLoader)
         dataset_params = params['DatasetParams']
         model_params = params['ModelParams']
 
+        self.apply_w2v = dataset_params['apply_w2v']
         self.apply_pca = dataset_params['apply_pca']
         self.reduced_dims = dataset_params['reduced_dims']
 
@@ -28,10 +31,10 @@ class RetweetModel(LightningModule):
         self.dropout = model_params['dropout']
 
     def build_model(self):
-        if self.apply_pca:
-            self.input = nn.Linear(self.reduced_dims, self.layer_width)
-        else:
-            self.input = nn.Linear(7, self.layer_width)
+        assert not self.apply_pca, 'Turn off PCA'
+        assert self.apply_w2v, 'Turn on Word2Vec'
+
+        self.input = nn.Linear(207, self.layer_width)
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
