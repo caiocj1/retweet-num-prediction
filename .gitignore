@@ -4,3 +4,4 @@ MNIST/
 __pycache__/
 data/
 checkpoints/
+models
