@@ -5,6 +5,7 @@ import pandas as pd
 import yaml
 
 from models.no_text_mlp import NoTextMLPModel
+from models.word2vec_mlp import Word2VecMLPModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -14,6 +15,7 @@ from pytorch_lightning import Trainer
 if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--model', '-m', default='NoTextMLP')
     parser.add_argument('--weights_path', '-w', required=True)
 
     args = parser.parse_args()
@@ -24,7 +26,11 @@ if __name__ == '__main__':
         params = yaml.load(f, Loader=yaml.SafeLoader)
 
     # Model selection
-    model = NoTextMLPModel()
+    model = None
+    if args.model == 'NoTextMLP':
+        model = NoTextMLPModel()
+    elif args.model == 'Word2VecMLP':
+        model = Word2VecMLPModel()
 
     data_module = RetweetDataModule(
         batch_size=32,

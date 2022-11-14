@@ -118,6 +118,7 @@ class RetweetDataModule(LightningDataModule):
         elif stage == 'predict':
             test_full = pd.read_csv(self.test_path)
             self.test_ids = test_full['TweetID']
+            test_text = test_full['text']
             test_full = test_full.drop(['TweetID', 'timestamp', 'mentions', 'text'], axis=1)
 
             test_full.urls = test_full.urls.apply(ast.literal_eval)
@@ -134,6 +135,13 @@ class RetweetDataModule(LightningDataModule):
 
             test_dict = defaultdict()
             for i in range(len(test_X)):
+                if hasattr(self, 'word2vec'):
+                    encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv]
+                    if encoded_words:
+                        text_vec = self.word2vec.wv[encoded_words].mean(0)
+                        test_X[i] = np.concatenate([test_X[i], text_vec])
+                    else:
+                        test_X[i] = np.concatenate([test_X[i], np.zeros((200,))])
                 test_dict[i] = (test_X[i], -1)
 
             self.data_predict = test_dict
