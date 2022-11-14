@@ -141,7 +141,7 @@ class RetweetDataModule(LightningDataModule):
                         text_vec = self.word2vec.wv[encoded_words].mean(0)
                         test_X[i] = np.concatenate([test_X[i], text_vec])
                     else:
-                        test_X[i] = np.concatenate([test_X[i], np.zeros((200,))])
+                        test_X[i] = np.concatenate([test_X[i], np.zeros((self.word2vec.vector_size,))])
                 test_dict[i] = (test_X[i], -1)
 
             self.data_predict = test_dict

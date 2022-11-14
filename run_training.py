@@ -49,8 +49,8 @@ if __name__ == '__main__':
         logger = TensorBoardLogger('.', version=version)
         model_ckpt = ModelCheckpoint(dirpath=f'lightning_logs/{args.version}_CV/checkpoints',
                                      filename='{epoch}-split=%d' % k,
-                                     save_top_k=3,
-                                     monitor='mae_val',
+                                     save_top_k=1,
+                                     monitor='loss_train_epoch',
                                      mode='min',
                                      save_weights_only=True)
         lr_monitor = LearningRateMonitor()
