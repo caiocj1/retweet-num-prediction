@@ -2,7 +2,8 @@ import argparse
 import os
 import yaml
 
-from model import RetweetModel
+from models.no_text_mlp import NoTextMLPModel
+from models.word2vec_mlp import Word2VecMLPModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -15,6 +16,7 @@ if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', '-v')
+    parser.add_argument('--model', '-m', default='NoTextMLP')
 
     args = parser.parse_args()
 
@@ -35,7 +37,11 @@ if __name__ == '__main__':
         print('Training on split', k, '...')
 
         # Initialize new model and setup data module
-        model = RetweetModel()
+        model = None
+        if args.model == 'NoTextMLP':
+            model = NoTextMLPModel()
+        elif args.model == 'Word2VecMLP':
+            model = Word2VecMLPModel()
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints
@@ -52,7 +58,7 @@ if __name__ == '__main__':
         # Trainer
         trainer = Trainer(accelerator='auto',
                           devices=1 if torch.cuda.is_available() else None,
-                          max_epochs=64,
+                          max_epochs=-1,
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
