@@ -34,7 +34,7 @@ class Word2VecMLPModel(LightningModule):
         assert not self.apply_pca, 'Turn off PCA'
         assert self.apply_w2v, 'Turn on Word2Vec'
 
-        self.input = nn.Linear(207, self.layer_width)
+        self.input = nn.Linear(263, self.layer_width)
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
