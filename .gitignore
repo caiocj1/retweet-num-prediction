@@ -4,3 +4,6 @@ MNIST/
 __pycache__/
 data/
 checkpoints/
+.git-rewrite
+models/word2vec.model.wv.vectors.npy
+models/word2vec.model.syn1neg.npy
