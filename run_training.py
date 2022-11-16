@@ -49,8 +49,9 @@ if __name__ == '__main__':
         logger = TensorBoardLogger('.', version=version)
         model_ckpt = ModelCheckpoint(dirpath=f'lightning_logs/{args.version}_CV/checkpoints',
                                      filename='{epoch}-split=%d' % k,
-                                     save_top_k=-1,
-                                     every_n_epochs=8,
+                                     save_top_k=1,
+                                     monitor='mae_val',
+                                     mode='min',
                                      save_weights_only=True)
         lr_monitor = LearningRateMonitor()
 
@@ -62,6 +63,3 @@ if __name__ == '__main__':
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
         trainer.fit(model, data_module)
-
-        if k == 0:
-            break

@@ -19,8 +19,11 @@ class Word2VecMLPModel(LightningModule):
         config_path = os.path.join(os.getcwd(), './config.yaml')
         with open(config_path) as f:
             params = yaml.load(f, Loader=SafeLoader)
+        word2vec_params = params['Word2VecParams']
         dataset_params = params['DatasetParams']
         model_params = params['ModelParams']
+
+        self.vector_size = word2vec_params['vector_size']
 
         self.apply_w2v = dataset_params['apply_w2v']
         self.apply_pca = dataset_params['apply_pca']
@@ -34,7 +37,8 @@ class Word2VecMLPModel(LightningModule):
         assert not self.apply_pca, 'Turn off PCA'
         assert self.apply_w2v, 'Turn on Word2Vec'
 
-        self.input = nn.Linear(263, self.layer_width)
+        self.input = nn.Linear(7 + self.vector_size, self.layer_width)
+
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
@@ -42,6 +46,7 @@ class Word2VecMLPModel(LightningModule):
             if self.dropout:
                 hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout()
         self.hidden_layers = nn.Sequential(hidden_layers_dict)
+
         self.output = nn.Linear(self.layer_width, 1)
         self.relu = nn.ReLU()
 

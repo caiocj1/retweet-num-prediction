@@ -1,6 +1,6 @@
 import argparse
 import os
-
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -49,10 +49,14 @@ if __name__ == '__main__':
 
         test_results = trainer.predict(model, data_module, ckpt_path=ckpt_path, return_predictions=True)
 
-        test_results_df = pd.DataFrame(data={'retweets_count': torch.cat(test_results).numpy()})
-        test_ids = pd.DataFrame(data_module.test_ids)
+        prediction = torch.cat(test_results).numpy()
+        results.append(prediction)
 
-        submission = pd.concat([test_ids, test_results_df], axis=1)
-        dataset_path = os.getenv('DATASET_PATH')
-        submission_path = os.path.join(dataset_path, 'submission.csv')
-        submission.to_csv(submission_path, index=False)
+    final_predictions = np.array(results).mean(0)
+    test_results_df = pd.DataFrame(data={'retweets_count': final_predictions})
+    test_ids = pd.DataFrame(data_module.test_ids)
+
+    submission = pd.concat([test_ids, test_results_df], axis=1)
+    dataset_path = os.getenv('DATASET_PATH')
+    submission_path = os.path.join(dataset_path, 'submission.csv')
+    submission.to_csv(submission_path, index=False)
