@@ -5,7 +5,8 @@ import pandas as pd
 import yaml
 
 from models.no_text_mlp import NoTextMLPModel
-from models.word2vec_mlp import Word2VecMLPModel
+from models.w2v_mlp import Word2VecMLPModel
+from models.embed_w2v_mlp import EmbedWord2VecMLPModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -31,6 +32,8 @@ if __name__ == '__main__':
         model = NoTextMLPModel()
     elif args.model == 'Word2VecMLP':
         model = Word2VecMLPModel()
+    elif args.model == 'EmbedWord2VecMLP':
+        model = EmbedWord2VecMLPModel()
 
     data_module = RetweetDataModule(
         batch_size=32,
