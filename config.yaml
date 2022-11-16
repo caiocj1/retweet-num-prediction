@@ -1,5 +1,5 @@
 Word2VecParams:
-  vector_size: 128  # size of word embedding
+  vector_size: 256  # size of word embedding
   w2v_epochs: 4
 
 DatasetParams:
@@ -8,9 +8,9 @@ DatasetParams:
   reduced_dims: 5
 
 ModelParams:
-  layer_width: 96
+  layer_width: 128
   num_layers: 3     # includes input and output layers (must be >= 2)
-  dropout: False
+  dropout: True
 
 TrainingParams:
   num_splits: 10    # number of folds for cross validation
