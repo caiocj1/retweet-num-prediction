@@ -40,7 +40,7 @@ class Word2VecMLPModel(LightningModule):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
             hidden_layers_dict['relu' + str(i + 1)] = nn.ReLU()
             if self.dropout:
-                hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout(p=0.25)
+                hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout()
         self.hidden_layers = nn.Sequential(hidden_layers_dict)
         self.output = nn.Linear(self.layer_width, 1)
         self.relu = nn.ReLU()

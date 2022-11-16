@@ -6,7 +6,7 @@ DatasetParams:
 ModelParams:
   layer_width: 256
   num_layers: 5
-  dropout: False
+  dropout: True
 
 TrainingParams:
   num_splits: 10
