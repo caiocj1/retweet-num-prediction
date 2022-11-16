@@ -57,7 +57,7 @@ if __name__ == '__main__':
         # Trainer
         trainer = Trainer(accelerator='auto',
                           devices=1 if torch.cuda.is_available() else None,
-                          max_epochs=-1,
+                          max_epochs=48,
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
