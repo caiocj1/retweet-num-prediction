@@ -1,7 +1,7 @@
 Word2VecParams:
   vector_size: 256  # size of word embedding
   w2v_epochs: 4
-  embed_dims: 32     # if using embed_w2v model, final size of text vector
+  embed_dims: 64     # if using embed_w2v model, final size of text vector
 
 DatasetParams:
   apply_w2v: True
