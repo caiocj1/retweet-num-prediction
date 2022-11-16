@@ -1,17 +1,17 @@
 Word2VecParams:
-  vector_size: 512 # size of word embedding
+  vector_size: 128  # size of word embedding
   w2v_epochs: 4
 
 DatasetParams:
   apply_w2v: True
-  apply_pca: False
+  apply_pca: False  # only works with NoTextMLP, reduces input
   reduced_dims: 5
 
 ModelParams:
-  layer_width: 256
-  num_layers: 3 # includes input and output layers (must be >= 2)
-  dropout: True
+  layer_width: 96
+  num_layers: 3     # includes input and output layers (must be >= 2)
+  dropout: False
 
 TrainingParams:
-  num_splits: 10
-  split_seed: 12345
+  num_splits: 10    # number of folds for cross validation
+  split_seed: 12345 # seed for reproducibility of results
