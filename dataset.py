@@ -55,6 +55,12 @@ class RetweetDataModule(LightningDataModule):
         if self.apply_w2v:
             self.word2vec = gensim.models.Word2Vec.load('models/word2vec.model')
 
+            train_tweets = self.train_df['text'].apply(str.split).to_list()
+            self.train_dictionary = gensim.corpora.Dictionary(train_tweets)
+            self.train_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in train_tweets]
+
+            self.tfidf = gensim.models.TfidfModel(self.train_corpus)
+
         # Fit eventual PCA
         if self.apply_pca:
             self.pca = PCA(self.reduced_dims)
@@ -104,12 +110,22 @@ class RetweetDataModule(LightningDataModule):
             val_text = self.train_df['text'].iloc[val_indexes]
             for i in range(len(train_y)):
                 if hasattr(self, 'word2vec'):
-                    text_vec = self.word2vec.wv[train_text.iloc[i].split(' ')].mean(0)
+                    keys = [self.train_dictionary.token2id[word] for word in train_text.iloc[i].split(' ')]
+                    tf_idf_dict = dict(self.tfidf[self.train_corpus[train_indexes[i]]])
+                    tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
+
+                    text_vec = self.word2vec.wv[train_text.iloc[i].split(' ')]
+                    text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
                     train_X[i] = np.concatenate([train_X[i], text_vec])
                 train_dict[i] = (train_X[i], train_y[i])
             for i in range(len(val_y)):
                 if hasattr(self, 'word2vec'):
-                    text_vec = self.word2vec.wv[val_text.iloc[i].split(' ')].mean(0)
+                    keys = [self.train_dictionary.token2id[word] for word in val_text.iloc[i].split(' ')]
+                    tf_idf_dict = dict(self.tfidf[self.train_corpus[val_indexes[i]]])
+                    tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
+
+                    text_vec = self.word2vec.wv[val_text.iloc[i].split(' ')]
+                    text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
                     val_X[i] = np.concatenate([val_X[i], text_vec])
                 val_dict[i] = (val_X[i], val_y[i])
 
@@ -118,7 +134,12 @@ class RetweetDataModule(LightningDataModule):
         elif stage == 'predict':
             test_full = pd.read_csv(self.test_path)
             self.test_ids = test_full['TweetID']
+
             test_text = test_full['text']
+
+            test_tweets = test_text.apply(str.split).to_list()
+            test_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in test_tweets]
+
             test_full = test_full.drop(['TweetID', 'timestamp', 'mentions', 'text'], axis=1)
 
             test_full.urls = test_full.urls.apply(ast.literal_eval)
@@ -138,7 +159,12 @@ class RetweetDataModule(LightningDataModule):
                 if hasattr(self, 'word2vec'):
                     encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv]
                     if encoded_words:
-                        text_vec = self.word2vec.wv[encoded_words].mean(0)
+                        keys = [self.train_dictionary.token2id[word] for word in test_text.iloc[i].split(' ')]
+                        tf_idf_dict = dict(self.tfidf[test_corpus[i]])
+                        tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
+
+                        text_vec = self.word2vec.wv[test_text.iloc[i].split(' ')]
+                        text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
                         test_X[i] = np.concatenate([test_X[i], text_vec])
                     else:
                         test_X[i] = np.concatenate([test_X[i], np.zeros((self.word2vec.vector_size,))])
