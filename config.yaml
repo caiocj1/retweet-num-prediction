@@ -11,7 +11,7 @@ DatasetParams:
 ModelParams:
   layer_width: 128
   num_layers: 3     # includes input and output layers (must be >= 2)
-  dropout: False
+  dropout: True
 
 TrainingParams:
   num_splits: 10    # number of folds for cross validation
