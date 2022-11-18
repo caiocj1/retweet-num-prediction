@@ -17,7 +17,8 @@ class RetweetDataModule(LightningDataModule):
             split_seed: int = 12345,  # split needs to be always the same for correct cross validation
             num_splits: int = 10,
             batch_size: int = 32,
-            num_workers: int = 0):
+            num_workers: int = 0,
+            max_samples: int = None):
         super().__init__()
         dataset_path = os.getenv('DATASET_PATH')
         self.train_path = os.path.join(dataset_path, 'train.csv')
@@ -39,6 +40,8 @@ class RetweetDataModule(LightningDataModule):
 
         # Get training set
         self.train_df = pd.read_csv(self.train_path)
+        if max_samples is not None:
+            self.train_df = self.train_df.iloc[:max_samples]
 
         self.train_df_input = self.train_df.drop(['TweetID', 'timestamp', 'mentions', 'retweets_count', 'text'], axis=1)
 
@@ -159,7 +162,7 @@ class RetweetDataModule(LightningDataModule):
                 if hasattr(self, 'word2vec'):
                     encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv]
                     if encoded_words:
-                        keys = [self.train_dictionary.token2id[word] for word in test_text.iloc[i].split(' ')]
+                        keys = [self.train_dictionary.token2id[word] for word in encoded_words]
                         tf_idf_dict = dict(self.tfidf[test_corpus[i]])
                         tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
 
