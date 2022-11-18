@@ -25,6 +25,7 @@ class ConvWord2VecModel(LightningModule):
 
         self.vector_size = word2vec_params['vector_size']
 
+        self.keep_time = dataset_params['keep_time']
         self.apply_w2v = dataset_params['apply_w2v']
         self.apply_pca = dataset_params['apply_pca']
         self.reduced_dims = dataset_params['reduced_dims']
@@ -52,7 +53,7 @@ class ConvWord2VecModel(LightningModule):
             nn.MaxPool1d(2),
 
             nn.Dropout(p=0.2),
-            
+
             nn.Conv1d(32, 64, 3, stride=2),
             nn.BatchNorm1d(64),
             nn.ReLU(),
@@ -72,7 +73,8 @@ class ConvWord2VecModel(LightningModule):
 
         )
 
-        self.input = nn.Linear(7 + 384, self.layer_width)
+        input_width = 12 if self.keep_time else 7
+        self.input = nn.Linear(input_width + 384, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
