@@ -160,13 +160,14 @@ class RetweetDataModule(LightningDataModule):
             test_dict = defaultdict()
             for i in range(len(test_X)):
                 if hasattr(self, 'word2vec'):
-                    encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv]
+                    encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv and
+                                     word in self.train_dictionary.token2id]
                     if encoded_words:
                         keys = [self.train_dictionary.token2id[word] for word in encoded_words]
                         tf_idf_dict = dict(self.tfidf[test_corpus[i]])
                         tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
 
-                        text_vec = self.word2vec.wv[test_text.iloc[i].split(' ')]
+                        text_vec = self.word2vec.wv[encoded_words]
                         text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
                         test_X[i] = np.concatenate([test_X[i], text_vec])
                     else:
