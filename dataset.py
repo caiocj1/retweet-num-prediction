@@ -43,7 +43,7 @@ class RetweetDataModule(LightningDataModule):
         self.train_df = pd.read_csv(self.train_path)
         if max_samples is not None:
             self.train_df = self.train_df.iloc[:max_samples]
-        self.train_df = self.train_df[self.train_df['favorites_count'] > 0]
+        #self.train_df = self.train_df[self.train_df['favorites_count'] > 0]
         self.train_df = self.format_df(self.train_df, keep_time=self.keep_time)
         print(len(self.train_df))
         self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)

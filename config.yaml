@@ -4,7 +4,7 @@ Word2VecParams:
   embed_dims: 32     # if using embed_w2v model, final size of text vector
 
 DatasetParams:
-  keep_time: False
+  keep_time: True
   apply_w2v: True
   apply_pca: False  # only works with NoTextMLP, reduces input
   reduced_dims: 5
