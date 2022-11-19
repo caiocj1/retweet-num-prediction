@@ -70,4 +70,3 @@ if __name__ == '__main__':
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
         trainer.fit(model, data_module)
-        
