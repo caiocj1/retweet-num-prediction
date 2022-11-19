@@ -43,9 +43,8 @@ class RetweetDataModule(LightningDataModule):
         self.train_df = pd.read_csv(self.train_path)
         if max_samples is not None:
             self.train_df = self.train_df.iloc[:max_samples]
-        #self.train_df = self.train_df[self.train_df['favorites_count'] > 0]
         self.train_df = self.format_df(self.train_df, keep_time=self.keep_time)
-        print(len(self.train_df))
+
         self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
 
         self.train_mean = self.train_df_input.values.mean(0)
@@ -107,50 +106,6 @@ class RetweetDataModule(LightningDataModule):
                                      type='train',
                                      indexes=val_indexes)
 
-            # train_df = self.train_df_input.iloc[train_indexes]
-            # val_df = self.train_df_input.iloc[val_indexes]
-            #
-            # # Get inputs
-            # train_X = (train_df.values - self.train_mean) / self.train_std
-            # val_X = (val_df.values - self.train_mean) / self.train_std
-            #
-            # if hasattr(self, 'pca'):
-            #     train_X = self.pca.transform(train_X)
-            #     val_X = self.pca.transform(val_X)
-            #
-            # train_X = dict(enumerate(train_X))
-            # val_X = dict(enumerate(val_X))
-            #
-            # # Get labels
-            # train_y = dict(enumerate(self.train_df.iloc[train_indexes]['retweets_count'].values))
-            # val_y = dict(enumerate(self.train_df.iloc[val_indexes]['retweets_count'].values))
-            #
-            # # Get dict
-            # train_dict = defaultdict()
-            # val_dict = defaultdict()
-            # train_text = self.train_df['text'].iloc[train_indexes]
-            # val_text = self.train_df['text'].iloc[val_indexes]
-            # for i in range(len(train_y)):
-            #     if hasattr(self, 'word2vec'):
-            #         keys = [self.train_dictionary.token2id[word] for word in train_text.iloc[i].split(' ')]
-            #         tf_idf_dict = dict(self.tfidf[self.train_corpus[train_indexes[i]]])
-            #         tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
-            #
-            #         text_vec = self.word2vec.wv[train_text.iloc[i].split(' ')]
-            #         text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
-            #         train_X[i] = np.concatenate([train_X[i], text_vec])
-            #     train_dict[i] = (train_X[i], train_y[i])
-            # for i in range(len(val_y)):
-            #     if hasattr(self, 'word2vec'):
-            #         keys = [self.train_dictionary.token2id[word] for word in val_text.iloc[i].split(' ')]
-            #         tf_idf_dict = dict(self.tfidf[self.train_corpus[val_indexes[i]]])
-            #         tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
-            #
-            #         text_vec = self.word2vec.wv[val_text.iloc[i].split(' ')]
-            #         text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
-            #         val_X[i] = np.concatenate([val_X[i], text_vec])
-            #     val_dict[i] = (val_X[i], val_y[i])
-
             self.data_train, self.data_val = train_dict, val_dict
 
         elif stage == 'predict':
@@ -158,45 +113,6 @@ class RetweetDataModule(LightningDataModule):
                                          self.train_mean,
                                          self.train_std,
                                          type='test')
-
-            # test_full = pd.read_csv(self.test_path)
-            # self.test_ids = test_full['TweetID']
-            #
-            # test_text = test_full['text']
-            #
-            # test_tweets = test_text.apply(str.split).to_list()
-            # test_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in test_tweets]
-            #
-            # test_full = test_full.drop(['TweetID', 'timestamp', 'mentions', 'text'], axis=1)
-            #
-            # test_full.urls = test_full.urls.apply(ast.literal_eval)
-            # test_full.urls = test_full.urls.apply(len)
-            #
-            # test_full.hashtags = test_full.hashtags.apply(ast.literal_eval)
-            # test_full.hashtags = test_full.hashtags.apply(len)
-            #
-            # test_X = (test_full.values - self.train_mean) / self.train_std
-            # if hasattr(self, 'pca'):
-            #     test_X = self.pca.transform(test_X)
-            #
-            # test_X = dict(enumerate(test_X))
-            #
-            # test_dict = defaultdict()
-            # for i in range(len(test_X)):
-            #     if hasattr(self, 'word2vec'):
-            #         encoded_words = [word for word in test_text.iloc[i].split(' ') if word in self.word2vec.wv and
-            #                          word in self.train_dictionary.token2id]
-            #         if encoded_words:
-            #             keys = [self.train_dictionary.token2id[word] for word in encoded_words]
-            #             tf_idf_dict = dict(self.tfidf[test_corpus[i]])
-            #             tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
-            #
-            #             text_vec = self.word2vec.wv[encoded_words]
-            #             text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
-            #             test_X[i] = np.concatenate([test_X[i], text_vec])
-            #         else:
-            #             test_X[i] = np.concatenate([test_X[i], np.zeros((self.word2vec.vector_size,))])
-            #     test_dict[i] = (test_X[i], -1)
 
             self.data_predict = predict_dict
 
