@@ -59,6 +59,10 @@ if __name__ == '__main__':
         results.append(prediction)
 
     final_predictions = np.array(results).mean(0)
+    #
+    where_zeros = (data_module.test_df['favorites_count'].values == 0).astype(int)
+    final_predictions = final_predictions * where_zeros
+    #
     test_results_df = pd.DataFrame(data={'retweets_count': final_predictions})
     test_ids = pd.DataFrame(data_module.test_ids)
 
