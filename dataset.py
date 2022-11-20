@@ -160,12 +160,6 @@ class RetweetDataModule(LightningDataModule):
 
             final_df = pd.concat([final_df, time_df], axis=1)
 
-            # if type == 'train':
-            #     final_df = final_df[final_df['tm_year'].values == 2022].drop(['tm_year'], axis=1)
-            #     final_df = final_df[final_df['tm_mon'].values == 3].drop(['tm_mon'], axis=1)
-            # else:
-            #     final_df = final_df.drop(['tm_year', 'tm_mon'], axis=1)
-
         return final_df
 
     def format_X(self,
