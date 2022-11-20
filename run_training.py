@@ -34,7 +34,7 @@ if __name__ == '__main__':
         num_splits=training_params['num_splits'],
         batch_size=32,
         num_workers=8,
-        max_samples=None)
+        max_samples=100)
 
     for k in range(training_params['num_splits']):
         print('Training on split', k, '...')

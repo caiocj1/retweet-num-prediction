@@ -39,42 +39,74 @@ class ConvWord2VecModel(LightningModule):
         assert self.apply_w2v, 'Turn on Word2Vec'
 
         self.conv = nn.Sequential(
-            nn.Conv1d(1, 16, 3),
+            # nn.Conv1d(1, 16, 3),
+            # nn.BatchNorm1d(16),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            #
+            # nn.Dropout(p=0.2),
+            #
+            # nn.Conv1d(16, 32, 3),
+            # nn.BatchNorm1d(32),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            #
+            # nn.Dropout(p=0.2),
+            #
+            # nn.Conv1d(32, 64, 3, stride=2),
+            # nn.BatchNorm1d(64),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            #
+            # nn.Dropout(p=0.2),
+            #
+            # nn.Conv1d(64, 64, 5, stride=2),
+            # nn.BatchNorm1d(64),
+
+            nn.Conv1d(1, 16, 5),
             nn.BatchNorm1d(16),
             nn.ReLU(),
 
             nn.MaxPool1d(2),
-
             nn.Dropout(p=0.2),
-            nn.Conv1d(16, 32, 3),
-            nn.BatchNorm1d(32),
+
+            nn.Conv1d(16, 16, 5, stride=2),
+            nn.BatchNorm1d(16),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
-
             nn.Dropout(p=0.2),
 
-            nn.Conv1d(32, 64, 3, stride=2),
+            nn.Conv1d(16, 64, 5),
             nn.BatchNorm1d(64),
             nn.ReLU(),
 
             nn.MaxPool1d(2),
-
             nn.Dropout(p=0.2),
 
             nn.Conv1d(64, 64, 5, stride=2),
             nn.BatchNorm1d(64),
+            nn.ReLU(),
 
-            nn.Flatten(),
+            nn.Dropout(p=0.2),
 
-            # nn.Linear(384, 128),
-            # nn.ReLU(),
-            # nn.Linear(128, 10)
+            nn.Conv1d(64, 128, 5),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
 
+            nn.MaxPool1d(2),
+            nn.Dropout(p=0.2),
+
+            nn.Conv1d(128, 128, 3),
+            nn.BatchNorm1d(128),
+
+            nn.Flatten()
         )
 
         input_width = 12 if self.keep_time else 7
-        self.input = nn.Linear(input_width + 384, self.layer_width)
+        self.input = nn.Linear(input_width + 256, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
@@ -142,9 +174,9 @@ class ConvWord2VecModel(LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
-        #lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
         #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=64)
+        #lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=64)
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=72)
 
         return [optimizer], [lr_scheduler]
 

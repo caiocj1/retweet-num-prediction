@@ -90,19 +90,19 @@ class RetweetDataModule(LightningDataModule):
     def setup(self, stage: str = None, k: int = 0):
         assert 0 <= k < self.hparams.num_splits, "incorrect fold number"
 
-        # Choose fold to train on
-        all_splits = [i for i in self.kf.split(self.train_df_input)]
-        train_indexes, val_indexes = all_splits[k]
-
         if stage == 'fit':
+            # Choose fold to train on
+            all_splits = [i for i in self.kf.split(self.train_df_input)]
+            train_indexes, val_indexes = all_splits[k]
+
             train_dict = self.format_X(self.train_df_input.iloc[train_indexes],
-                                       self.train_df_input.iloc[train_indexes].values.mean(0),
-                                       self.train_df_input.iloc[train_indexes].values.std(0),
+                                       self.train_mean,
+                                       self.train_std,
                                        type='train',
                                        indexes=train_indexes)
             val_dict = self.format_X(self.train_df_input.iloc[val_indexes],
-                                     self.train_df_input.iloc[train_indexes].values.mean(0),
-                                     self.train_df_input.iloc[train_indexes].values.std(0),
+                                     self.train_mean,
+                                     self.train_std,
                                      type='train',
                                      indexes=val_indexes)
 
@@ -110,8 +110,8 @@ class RetweetDataModule(LightningDataModule):
 
         elif stage == 'predict':
             predict_dict = self.format_X(self.test_df_input,
-                                         self.train_df_input.iloc[train_indexes].values.mean(0),
-                                         self.train_df_input.iloc[train_indexes].values.std(0),
+                                         self.train_mean,
+                                         self.train_std,
                                          type='test')
 
             self.data_predict = predict_dict
