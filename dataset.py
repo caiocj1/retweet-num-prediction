@@ -152,7 +152,7 @@ class RetweetDataModule(LightningDataModule):
             def apply_avg_urls(list_obj):
                 sum = 0
                 for url in list_obj:
-                    sum += avg_per_url[url] if url in avg_per_url else 0.0
+                    sum += self.avg_per_url[url] if url in avg_per_url else 0.0
                 return sum / len(list_obj) if len(list_obj) > 0 else 0.0
             url_avg_retweets = df['urls'].apply(apply_avg_urls)
             final_df = pd.concat([final_df, url_avg_retweets], axis=1)
