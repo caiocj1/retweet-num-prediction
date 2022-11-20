@@ -41,8 +41,10 @@ class RetweetDataModule(LightningDataModule):
 
         # Get training set
         read_train_df = pd.read_csv(self.train_path)
+        read_train_df.urls = read_train_df.urls.apply(ast.literal_eval)
         if max_samples is not None:
             read_train_df = read_train_df.iloc[:max_samples]
+
 
         temp = read_train_df.explode('urls')[['urls', 'retweets_count']]
         self.avg_per_url = temp.groupby(['urls']).mean().to_dict()['retweets_count']
@@ -55,9 +57,10 @@ class RetweetDataModule(LightningDataModule):
         self.train_std = self.train_df_input.values.std(0)
 
         # Get test set
-        self.test_df = pd.read_csv(self.test_path)
-        self.test_ids = self.test_df['TweetID']
-        self.test_df = self.format_df(self.test_df, type='test', keep_time=self.keep_time, keep_fts=True)
+        read_test_df = pd.read_csv(self.test_path)
+        read_test_df.urls = read_test_df.urls.apply(ast.literal_eval)
+        self.test_ids = read_test_df['TweetID']
+        self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=True)
 
         self.test_df_input = self.test_df.drop(['text'], axis=1)
 
@@ -145,7 +148,6 @@ class RetweetDataModule(LightningDataModule):
                   keep_fts: bool = False):
         final_df = df.drop(['TweetID', 'mentions', 'timestamp'], axis=1)
 
-        final_df.urls = final_df.urls.apply(ast.literal_eval)
         final_df.hashtags = final_df.hashtags.apply(ast.literal_eval)
 
         if keep_fts:
