@@ -105,7 +105,7 @@ class ConvWord2VecModel(LightningModule):
             nn.Flatten()
         )
 
-        input_width = 12 if self.keep_time else 7
+        input_width = 14 if self.keep_time else 7
         self.input = nn.Linear(input_width + 256, self.layer_width)
 
         hidden_layers_dict = OrderedDict()

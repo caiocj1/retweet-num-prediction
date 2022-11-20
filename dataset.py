@@ -40,10 +40,14 @@ class RetweetDataModule(LightningDataModule):
         self.kf = KFold(n_splits=self.hparams.num_splits, shuffle=True, random_state=self.hparams.split_seed)
 
         # Get training set
-        self.train_df = pd.read_csv(self.train_path)
+        read_train_df = pd.read_csv(self.train_path)
         if max_samples is not None:
-            self.train_df = self.train_df.iloc[:max_samples]
-        self.train_df = self.format_df(self.train_df, keep_time=self.keep_time)
+            read_train_df = read_train_df.iloc[:max_samples]
+
+        temp = read_train_df.explode('urls')[['urls', 'retweets_count']]
+        self.avg_per_url = temp.groupby(['urls']).mean().to_dict()['retweets_count']
+
+        self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=True)
 
         self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
 
@@ -53,7 +57,7 @@ class RetweetDataModule(LightningDataModule):
         # Get test set
         self.test_df = pd.read_csv(self.test_path)
         self.test_ids = self.test_df['TweetID']
-        self.test_df = self.format_df(self.test_df, type='test', keep_time=self.keep_time)
+        self.test_df = self.format_df(self.test_df, type='test', keep_time=self.keep_time, keep_fts=True)
 
         self.test_df_input = self.test_df.drop(['text'], axis=1)
 
@@ -137,17 +141,27 @@ class RetweetDataModule(LightningDataModule):
     def format_df(self,
                   df: pd.DataFrame,
                   type: str = 'train',
-                  url_len_only: bool = True,
-                  hashtag_len_only: bool = True,
-                  keep_time: bool = False):
+                  keep_time: bool = False,
+                  keep_fts: bool = False):
         final_df = df.drop(['TweetID', 'mentions', 'timestamp'], axis=1)
 
         final_df.urls = final_df.urls.apply(ast.literal_eval)
         final_df.hashtags = final_df.hashtags.apply(ast.literal_eval)
-        if url_len_only:
-            final_df.urls = final_df.urls.apply(len)
-        if hashtag_len_only:
-            final_df.hashtags = final_df.hashtags.apply(len)
+
+        if keep_fts:
+            def apply_avg_urls(list_obj):
+                sum = 0
+                for url in list_obj:
+                    sum += avg_per_url[url] if url in avg_per_url else 0.0
+                return sum / len(list_obj) if len(list_obj) > 0 else 0.0
+            url_avg_retweets = df['urls'].apply(apply_avg_urls)
+            final_df = pd.concat([final_df, url_avg_retweets], axis=1)
+
+            text_len = df['text'].apply(len)
+            final_df = pd.concat([final_df, text_len], axis=1)
+
+        final_df.urls = final_df.urls.apply(len)
+        final_df.hashtags = final_df.hashtags.apply(len)
 
         if keep_time:
             timestamps = df.timestamp // 1000
