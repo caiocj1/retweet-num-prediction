@@ -72,11 +72,13 @@ class RetweetDataModule(LightningDataModule):
         if self.apply_w2v:
             self.word2vec = gensim.models.Word2Vec.load('models/word2vec.model')
 
-            train_tweets = self.train_df['text'].apply(str.split).to_list()
+            #train_tweets = self.train_df['text'].apply(str.split).to_list()
+            train_tweets = self.train_df['text'].to_list()
             self.train_dictionary = gensim.corpora.Dictionary(train_tweets)
             self.train_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in train_tweets]
 
-            test_tweets = self.test_df['text'].apply(str.split).to_list()
+            #test_tweets = self.test_df['text'].apply(str.split).to_list()
+            test_tweets = self.test_df['text'].to_list()
             self.test_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in test_tweets]
 
             self.tfidf = gensim.models.TfidfModel(self.train_corpus)
@@ -153,6 +155,10 @@ class RetweetDataModule(LightningDataModule):
                   keep_fts: bool = False):
         final_df = df.drop(['TweetID', 'mentions', 'timestamp'], axis=1)
 
+        # new: urls and hashtags in text
+        final_df['text'] = final_df['text'].apply(str.split)
+        final_df['text'] = final_df[['text', 'urls', 'hashtags']].sum(axis=1)
+
         if keep_fts:
             def apply_avg_urls(list_obj):
                 result = 0.0
@@ -218,7 +224,8 @@ class RetweetDataModule(LightningDataModule):
             text = self.test_df['text']
         for i in range(len(y)):
             if hasattr(self, 'word2vec'):
-                encoded_words = [word for word in text.iloc[i].split(' ') if word in self.word2vec.wv and
+                #encoded_words = [word for word in text.iloc[i].split(' ') if word in self.word2vec.wv and
+                encoded_words = [word for word in text.iloc[i] if word in self.word2vec.wv and
                                  word in self.train_dictionary.token2id]
                 if encoded_words:
                     keys = [self.train_dictionary.token2id[word] for word in encoded_words]

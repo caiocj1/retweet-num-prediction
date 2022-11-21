@@ -1,3 +1,5 @@
+import ast
+
 import pandas as pd
 import gensim, logging
 import os
@@ -19,9 +21,13 @@ if __name__ == '__main__':
         def __init__(self, text_df: pd.DataFrame):
             self.df = text_df
 
+            self.df.text = self.df.text.apply(str.split)
+            self.df.urls = self.df.urls.apply(ast.literal_eval)
+            self.df.hashtags = self.df.hashtags.apply(ast.literal_eval)
+
         def __iter__(self):
-            for tweet in self.df['text'].to_list():
-                yield tweet.split(' ')
+            for tweet in self.df[['text', 'urls', 'hashtags']].sum(axis=1).to_list():
+                yield tweet
 
     tweets = Corpus(train_df)
     model = gensim.models.Word2Vec(tweets,
