@@ -51,7 +51,7 @@ class RetweetDataModule(LightningDataModule):
         temp = read_train_df.explode('hashtags')[['hashtags', 'favorites_count']]
         self.avg_per_hashtag = temp.groupby(['hashtags']).mean().to_dict()['favorites_count']
 
-        self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=True)
+        self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=self.keep_fts)
 
         self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
 
@@ -63,7 +63,8 @@ class RetweetDataModule(LightningDataModule):
         read_test_df.urls = read_test_df.urls.apply(ast.literal_eval)
         read_test_df.hashtags = read_test_df.hashtags.apply(ast.literal_eval)
         self.test_ids = read_test_df['TweetID']
-        self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=True)
+
+        self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=self.keep_fts)
 
         self.test_df_input = self.test_df.drop(['text'], axis=1)
 
@@ -92,6 +93,7 @@ class RetweetDataModule(LightningDataModule):
             params = yaml.load(f, Loader=SafeLoader)
         dataset_params = params['DatasetParams']
 
+        self.keep_fts = dataset_params['keep_fts']
         self.keep_time = dataset_params['keep_time']
         self.apply_w2v = dataset_params['apply_w2v']
         self.apply_pca = dataset_params['apply_pca']
