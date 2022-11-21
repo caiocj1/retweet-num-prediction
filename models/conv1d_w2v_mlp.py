@@ -39,33 +39,6 @@ class ConvWord2VecModel(LightningModule):
         assert self.apply_w2v, 'Turn on Word2Vec'
 
         self.conv = nn.Sequential(
-            # nn.Conv1d(1, 16, 3),
-            # nn.BatchNorm1d(16),
-            # nn.ReLU(),
-            #
-            # nn.MaxPool1d(2),
-            #
-            # nn.Dropout(p=0.2),
-            #
-            # nn.Conv1d(16, 32, 3),
-            # nn.BatchNorm1d(32),
-            # nn.ReLU(),
-            #
-            # nn.MaxPool1d(2),
-            #
-            # nn.Dropout(p=0.2),
-            #
-            # nn.Conv1d(32, 64, 3, stride=2),
-            # nn.BatchNorm1d(64),
-            # nn.ReLU(),
-            #
-            # nn.MaxPool1d(2),
-            #
-            # nn.Dropout(p=0.2),
-            #
-            # nn.Conv1d(64, 64, 5, stride=2),
-            # nn.BatchNorm1d(64),
-
             nn.Conv1d(1, 16, 5),
             nn.BatchNorm1d(16),
             nn.ReLU(),
@@ -105,7 +78,7 @@ class ConvWord2VecModel(LightningModule):
             nn.Flatten()
         )
 
-        input_width = 14 if self.keep_time else 7
+        input_width = 15 if self.keep_time else 7
         self.input = nn.Linear(input_width + 256, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
