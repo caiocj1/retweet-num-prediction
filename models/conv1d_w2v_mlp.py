@@ -50,27 +50,27 @@ class ConvWord2VecModel(LightningModule):
             nn.BatchNorm1d(16),
             nn.ReLU(),
 
-            nn.Dropout(p=0.4),
+            nn.Dropout(p=self.dropout),
 
             nn.Conv1d(16, 64, 5),
             nn.BatchNorm1d(64),
             nn.ReLU(),
 
             nn.MaxPool1d(2),
-            nn.Dropout(p=0.4),
+            nn.Dropout(p=self.dropout),
 
             nn.Conv1d(64, 64, 5, stride=2),
             nn.BatchNorm1d(64),
             nn.ReLU(),
 
-            nn.Dropout(p=0.4),
+            nn.Dropout(p=self.dropout),
 
             nn.Conv1d(64, 128, 5),
             nn.BatchNorm1d(128),
             nn.ReLU(),
 
             nn.MaxPool1d(2),
-            nn.Dropout(p=0.4),
+            nn.Dropout(p=self.dropout),
 
             nn.Conv1d(128, 128, 3),
             nn.BatchNorm1d(128),
@@ -85,8 +85,7 @@ class ConvWord2VecModel(LightningModule):
         for i in range(self.num_layers - 2):
             hidden_layers_dict['layer' + str(i + 1)] = nn.Linear(self.layer_width, self.layer_width)
             hidden_layers_dict['relu' + str(i + 1)] = nn.ReLU()
-            if self.dropout:
-                hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout(p=0.4)
+            hidden_layers_dict['dropout' + str(i + 1)] = nn.Dropout(p=self.dropout)
         self.hidden_layers = nn.Sequential(hidden_layers_dict)
 
         self.output = nn.Linear(self.layer_width, 1)
