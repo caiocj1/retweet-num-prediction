@@ -8,6 +8,7 @@ dependencies:
   - numpy
   - pytorch
   - torchvision
+  - cudatoolkit
   - pytorch-lightning
   - tensorboard
   - os
