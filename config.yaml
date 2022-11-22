@@ -1,6 +1,6 @@
 Word2VecParams:
-  vector_size: 256  # size of word embedding
-  w2v_epochs: 4
+  vector_size: 512  # size of word embedding
+  w2v_epochs: 6
   embed_dims: 32    # if using embed_w2v model, final size of text vector
 
 DatasetParams:
@@ -11,7 +11,7 @@ DatasetParams:
   reduced_dims: 5
 
 ModelParams:
-  layer_width: 128
+  layer_width: 512
   num_layers: 3     # includes input and output layers (must be >= 2)
   dropout: 0.2      # dropout rate, 0.0 equivalent to no dropout-
 
