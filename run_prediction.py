@@ -8,6 +8,7 @@ from models.no_text_mlp import NoTextMLPModel
 from models.w2v_mlp import Word2VecMLPModel
 from models.embed_w2v_mlp import EmbedWord2VecMLPModel
 from models.conv1d_w2v_mlp import ConvWord2VecModel
+from models.transf_w2v_mlp import TransformerModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -37,6 +38,8 @@ if __name__ == '__main__':
         model = EmbedWord2VecMLPModel()
     elif args.model == 'conv':
         model = ConvWord2VecModel()
+    elif args.model == 'transf':
+        model = TransformerModel()
 
     data_module = RetweetDataModule(
         batch_size=32,

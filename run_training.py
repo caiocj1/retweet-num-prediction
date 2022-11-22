@@ -6,6 +6,7 @@ from models.no_text_mlp import NoTextMLPModel
 from models.w2v_mlp import Word2VecMLPModel
 from models.embed_w2v_mlp import EmbedWord2VecMLPModel
 from models.conv1d_w2v_mlp import ConvWord2VecModel
+from models.transf_w2v_mlp import TransformerModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -49,6 +50,8 @@ if __name__ == '__main__':
             model = EmbedWord2VecMLPModel()
         elif args.model == 'conv':
             model = ConvWord2VecModel()
+        elif args.model == 'transf':
+            model = TransformerModel()
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints
@@ -65,7 +68,7 @@ if __name__ == '__main__':
         # Trainer
         trainer = Trainer(accelerator='auto',
                           devices=1 if torch.cuda.is_available() else None,
-                          max_epochs=72,
+                          max_epochs=144,
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
