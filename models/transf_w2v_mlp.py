@@ -38,7 +38,7 @@ class TransformerModel(LightningModule):
         assert not self.apply_pca, 'Turn off PCA'
         assert self.apply_w2v, 'Turn on Word2Vec'
 
-        self.transformer = nn.Transformer(d_model=self.vector_size)
+        self.transformer = nn.Transformer(d_model=self.vector_size, batch_first=True)
 
         input_width = 12 if self.keep_time else 7
         self.input = nn.Linear(input_width + 256, self.layer_width)
