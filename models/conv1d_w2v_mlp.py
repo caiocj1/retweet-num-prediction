@@ -39,12 +39,47 @@ class ConvWord2VecModel(LightningModule):
         assert self.apply_w2v, 'Turn on Word2Vec'
 
         self.conv = nn.Sequential(
+            # nn.Conv1d(1, 16, 5),
+            # nn.BatchNorm1d(16),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            # nn.Dropout(p=0.self.dropout),
+            #
+            # nn.Conv1d(16, 16, 5, stride=2),
+            # nn.BatchNorm1d(16),
+            # nn.ReLU(),
+            #
+            # nn.Dropout(p=self.dropout),
+            #
+            # nn.Conv1d(16, 64, 5),
+            # nn.BatchNorm1d(64),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            # nn.Dropout(p=self.dropout),
+            #
+            # nn.Conv1d(64, 64, 5, stride=2),
+            # nn.BatchNorm1d(64),
+            # nn.ReLU(),
+            #
+            # nn.Dropout(p=self.dropout),
+            #
+            # nn.Conv1d(64, 128, 5),
+            # nn.BatchNorm1d(128),
+            # nn.ReLU(),
+            #
+            # nn.MaxPool1d(2),
+            # nn.Dropout(p=self.dropout),
+            #
+            # nn.Conv1d(128, 128, 3),
+            # nn.BatchNorm1d(128),
+
             nn.Conv1d(1, 16, 5),
             nn.BatchNorm1d(16),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
-            nn.Dropout(p=0.4),
+            nn.Dropout(p=self.dropout),
 
             nn.Conv1d(16, 16, 5, stride=2),
             nn.BatchNorm1d(16),
@@ -52,11 +87,40 @@ class ConvWord2VecModel(LightningModule):
 
             nn.Dropout(p=self.dropout),
 
-            nn.Conv1d(16, 64, 5),
+            nn.Conv1d(16, 16, 5),
+            nn.BatchNorm1d(16),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(16, 32, 5),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(32, 32, 5, stride=2),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(32, 32, 5),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(32, 64, 5),
             nn.BatchNorm1d(64),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(64, 64, 5, stride=2),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+
             nn.Dropout(p=self.dropout),
 
             nn.Conv1d(64, 64, 5, stride=2),
@@ -69,17 +133,28 @@ class ConvWord2VecModel(LightningModule):
             nn.BatchNorm1d(128),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
             nn.Dropout(p=self.dropout),
 
-            nn.Conv1d(128, 128, 3),
+            nn.Conv1d(128, 128, 5, stride=2),
             nn.BatchNorm1d(128),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(128, 256, 5, stride=2),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv1d(256, 256, 3),
+            nn.BatchNorm1d(256),
 
             nn.Flatten()
         )
 
         input_width = 12 if self.keep_time else 7
-        self.input = nn.Linear(input_width + 1280, self.layer_width)
+        self.input = nn.Linear(input_width + 256, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
