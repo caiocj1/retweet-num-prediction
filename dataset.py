@@ -93,7 +93,10 @@ class RetweetDataModule(LightningDataModule):
         config_path = os.path.join(os.getcwd(), 'config.yaml')
         with open(config_path) as f:
             params = yaml.load(f, Loader=SafeLoader)
+        word2vec_params = params['Word2VecParams']
         dataset_params = params['DatasetParams']
+
+        self.urls_hashtags_in_text = word2vec_params['urls_hashtags_in_text']
 
         self.keep_fts = dataset_params['keep_fts']
         self.keep_time = dataset_params['keep_time']
@@ -155,9 +158,10 @@ class RetweetDataModule(LightningDataModule):
                   keep_fts: bool = False):
         final_df = df.drop(['TweetID', 'mentions', 'timestamp'], axis=1)
 
-        # new: urls and hashtags in text
         final_df['text'] = final_df['text'].apply(str.split)
-        final_df['text'] = final_df[['text', 'urls', 'hashtags']].sum(axis=1)
+
+        if self.urls_hashtags_in_text:
+            final_df['text'] = final_df[['text', 'urls', 'hashtags']].sum(axis=1)
 
         if keep_fts:
             def apply_avg_urls(list_obj):

@@ -26,8 +26,12 @@ if __name__ == '__main__':
             self.df.hashtags = self.df.hashtags.apply(ast.literal_eval)
 
         def __iter__(self):
-            for tweet in self.df[['text', 'urls', 'hashtags']].sum(axis=1).to_list():
-                yield tweet
+            if word2vec_params['urls_hashtags_in_text']:
+                for tweet in self.df[['text', 'urls', 'hashtags']].sum(axis=1).to_list():
+                    yield tweet
+            else:
+                for tweet in self.df['text'].to_list():
+                    yield tweet
 
     tweets = Corpus(train_df)
     model = gensim.models.Word2Vec(tweets,

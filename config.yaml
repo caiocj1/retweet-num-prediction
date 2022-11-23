@@ -2,6 +2,7 @@ Word2VecParams:
   vector_size: 256  # size of word embedding
   w2v_epochs: 4
   embed_dims: 32    # if using embed_w2v model, final size of text vector
+  urls_hashtags_in_text: False
 
 DatasetParams:
   keep_fts: False
