@@ -8,6 +8,8 @@ import datetime
 from yaml import SafeLoader
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
+import sklearn
+import sklearn.cluster
 from sklearn.model_selection import KFold
 from sklearn.decomposition import PCA
 from typing import Optional
@@ -39,6 +41,9 @@ class RetweetDataModule(LightningDataModule):
         # Prepare split
         self.kf = KFold(n_splits=self.hparams.num_splits, shuffle=True, random_state=self.hparams.split_seed)
 
+
+
+
         # Get training set
         read_train_df = pd.read_csv(self.train_path)
         read_train_df.urls = read_train_df.urls.apply(ast.literal_eval)
@@ -46,17 +51,19 @@ class RetweetDataModule(LightningDataModule):
         if max_samples is not None:
             read_train_df = read_train_df.iloc[:max_samples]
 
-        temp = read_train_df.explode('urls')[['urls', 'favorites_count']]
-        self.avg_per_url = temp.groupby(['urls']).mean().to_dict()['favorites_count']
-        temp = read_train_df.explode('hashtags')[['hashtags', 'favorites_count']]
-        self.avg_per_hashtag = temp.groupby(['hashtags']).mean().to_dict()['favorites_count']
+        temp = read_train_df.explode('hashtags')[['hashtags', 'retweets_count']]
+        self.retweet_hash_avg = temp.groupby(['hashtags']).mean().to_dict()['retweets_count']
 
         self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=self.keep_fts)
 
-        self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
+        #self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
+        self.train_df_input = self.feature_engineering(self.train_df, type='train')
 
         self.train_mean = self.train_df_input.values.mean(0)
         self.train_std = self.train_df_input.values.std(0)
+
+
+
 
         # Get test set
         read_test_df = pd.read_csv(self.test_path)
@@ -66,7 +73,10 @@ class RetweetDataModule(LightningDataModule):
 
         self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=self.keep_fts)
 
-        self.test_df_input = self.test_df.drop(['text'], axis=1)
+        #self.test_df_input = self.test_df.drop(['text'], axis=1)
+        self.test_df_input = self.feature_engineering(self.test_df, type='test')
+
+
 
         # Load word2vec
         if self.apply_w2v:
@@ -163,28 +173,8 @@ class RetweetDataModule(LightningDataModule):
         if self.urls_hashtags_in_text:
             final_df['text'] = final_df[['text', 'urls', 'hashtags']].sum(axis=1)
 
-        if keep_fts:
-            def apply_avg_urls(list_obj):
-                result = 0.0
-                for url in list_obj:
-                    result += self.avg_per_url[url] if url in self.avg_per_url else 0.0
-                return result / len(list_obj) if list_obj else 0.0
-            url_avg_favs = df['urls'].apply(apply_avg_urls).rename('fav_avg_per_url')
-            final_df = pd.concat([final_df, url_avg_favs], axis=1)
-
-            def apply_avg_hashtags(list_obj):
-                result = 0.0
-                for hashtag in list_obj:
-                    result += self.avg_per_hashtag[hashtag] if hashtag in self.avg_per_hashtag else 0.0
-                return result / len(list_obj) if list_obj else 0.0
-            hash_avg_favs = df['hashtags'].apply(apply_avg_hashtags).rename('fav_avg_per_hashtag')
-            final_df = pd.concat([final_df, hash_avg_favs], axis=1)
-
-            text_len = df['text'].apply(len).rename('text_len')
-            final_df = pd.concat([final_df, text_len], axis=1)
-
-        final_df.urls = final_df.urls.apply(len)
-        final_df.hashtags = final_df.hashtags.apply(len)
+        final_df['url_count'] = final_df.urls.apply(len)
+        final_df['hashtag_count'] = final_df.hashtags.apply(len)
 
         if keep_time:
             timestamps = df.timestamp // 1000
@@ -193,9 +183,37 @@ class RetweetDataModule(LightningDataModule):
             time_df = pd.DataFrame(timestamps.tolist(), index=df.index,
                                    columns=['tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min', 'tm_sec', 'tm_wday',
                                             'tm_yday', 'tm_isdst'])
-            time_df = time_df.drop(['tm_year', 'tm_mon', 'tm_mday', 'tm_isdst'], axis=1)
 
             final_df = pd.concat([final_df, time_df], axis=1)
+
+        return final_df
+
+    def get_list_avg(self, list_obj):
+        sum = 0
+        for hash in list_obj:
+            sum += self.retweet_hash_avg[hash] if hash in self.retweet_hash_avg else -1.0
+        return sum / len(list_obj) if list_obj else -1.0
+
+    def feature_engineering(self,
+                            df: pd.DataFrame,
+                            type: str = 'train'):
+        final_df = df.drop(['text', 'urls', 'hashtags', 'tm_sec', 'tm_isdst'], axis=1)
+        if type == 'train':
+            final_df = final_df.drop('retweets_count', axis=1)
+
+        final_df.favorites_count = np.log10(final_df.favorites_count).replace([-np.inf], -10)
+        final_df.friends_count = np.log10(final_df.friends_count).replace([-np.inf], -10)
+        final_df.followers_count = np.log10(final_df.followers_count).replace([-np.inf], -10)
+        final_df.statuses_count = np.log10(final_df.statuses_count).replace([-np.inf], -10)
+
+        if type == 'train':
+            self.scaler = sklearn.preprocessing.StandardScaler()
+            self.scaler.fit(final_df)
+
+        kmeans = sklearn.cluster.KMeans(n_clusters=9, random_state=0).fit(self.scaler.transform(final_df))
+        final_df['cluster'] = kmeans.labels_
+
+        final_df['retweet_hash_avg'] = df['hashtags'].apply(self.get_list_avg)
 
         return final_df
 
