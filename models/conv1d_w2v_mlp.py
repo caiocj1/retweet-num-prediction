@@ -77,9 +77,6 @@ class ConvWord2VecModel(LightningModule):
             # new ----------------------
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
-            nn.Dropout(p=self.dropout),
-
             nn.Conv1d(128, 8, 1),
             nn.BatchNorm1d(8),
             # --------------------------
