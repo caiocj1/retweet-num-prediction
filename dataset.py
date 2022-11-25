@@ -33,15 +33,8 @@ class RetweetDataModule(LightningDataModule):
         # Read config file
         self.read_config()
 
-        # Declare data
-        self.data_train = None
-        self.data_val = None
-        self.data_predict = None
-
         # Prepare split
         self.kf = KFold(n_splits=self.hparams.num_splits, shuffle=True, random_state=self.hparams.split_seed)
-
-
 
 
         # Get training set
@@ -56,13 +49,10 @@ class RetweetDataModule(LightningDataModule):
 
         self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=self.keep_fts)
 
-        #self.train_df_input = self.train_df.drop(['retweets_count', 'text'], axis=1)
         self.train_df_input = self.feature_engineering(self.train_df, type='train')
 
         self.train_mean = self.train_df_input.values.mean(0)
         self.train_std = self.train_df_input.values.std(0)
-
-
 
 
         # Get test set
@@ -73,25 +63,22 @@ class RetweetDataModule(LightningDataModule):
 
         self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=self.keep_fts)
 
-        #self.test_df_input = self.test_df.drop(['text'], axis=1)
         self.test_df_input = self.feature_engineering(self.test_df, type='test')
-
 
 
         # Load word2vec
         if self.apply_w2v:
             self.word2vec = gensim.models.Word2Vec.load('models/word2vec.model')
 
-            #train_tweets = self.train_df['text'].apply(str.split).to_list()
             train_tweets = self.train_df['text'].to_list()
             self.train_dictionary = gensim.corpora.Dictionary(train_tweets)
             self.train_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in train_tweets]
 
-            #test_tweets = self.test_df['text'].apply(str.split).to_list()
             test_tweets = self.test_df['text'].to_list()
             self.test_corpus = [self.train_dictionary.doc2bow(tweet) for tweet in test_tweets]
 
             self.tfidf = gensim.models.TfidfModel(self.train_corpus)
+
 
         # Fit eventual PCA
         if self.apply_pca:
@@ -206,14 +193,14 @@ class RetweetDataModule(LightningDataModule):
         # final_df.followers_count = np.log10(final_df.followers_count).replace([-np.inf], -10)
         # final_df.statuses_count = np.log10(final_df.statuses_count).replace([-np.inf], -10)
         #
-        # if type == 'train':
-        #     self.scaler = sklearn.preprocessing.StandardScaler()
-        #     self.scaler.fit(final_df)
-        #
-        # kmeans = sklearn.cluster.KMeans(n_clusters=9, random_state=0).fit(self.scaler.transform(final_df))
-        # final_df['cluster'] = kmeans.labels_
-        #
-        # final_df['retweet_hash_avg'] = df['hashtags'].apply(self.get_list_avg)
+        if type == 'train':
+            self.scaler = sklearn.preprocessing.StandardScaler()
+            self.scaler.fit(final_df)
+
+        kmeans = sklearn.cluster.KMeans(n_clusters=9, random_state=0).fit(self.scaler.transform(final_df))
+        final_df['cluster'] = kmeans.labels_
+
+        final_df['retweet_hash_avg'] = df['hashtags'].apply(self.get_list_avg)
 
         return final_df
 
