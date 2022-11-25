@@ -77,15 +77,15 @@ class ConvWord2VecModel(LightningModule):
             # new ----------------------
             nn.ReLU(),
 
-            nn.Conv1d(128, 8, 1),
-            nn.BatchNorm1d(8),
+            nn.Conv1d(128, 16, 1),
+            nn.BatchNorm1d(16),
             # --------------------------
             nn.Flatten()
         )
 
-        input_width = 16 if self.keep_time else 7
+        input_width = 14 if self.keep_time else 7
         #self.input = nn.Linear(input_width + 256, self.layer_width)
-        self.input = nn.Linear(input_width + 16, self.layer_width)
+        self.input = nn.Linear(input_width + 32, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
