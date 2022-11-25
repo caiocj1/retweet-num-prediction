@@ -201,19 +201,19 @@ class RetweetDataModule(LightningDataModule):
         if type == 'train':
             final_df = final_df.drop('retweets_count', axis=1)
 
-        final_df.favorites_count = np.log10(final_df.favorites_count).replace([-np.inf], -10)
-        final_df.friends_count = np.log10(final_df.friends_count).replace([-np.inf], -10)
-        final_df.followers_count = np.log10(final_df.followers_count).replace([-np.inf], -10)
-        final_df.statuses_count = np.log10(final_df.statuses_count).replace([-np.inf], -10)
-
-        if type == 'train':
-            self.scaler = sklearn.preprocessing.StandardScaler()
-            self.scaler.fit(final_df)
-
-        kmeans = sklearn.cluster.KMeans(n_clusters=9, random_state=0).fit(self.scaler.transform(final_df))
-        final_df['cluster'] = kmeans.labels_
-
-        final_df['retweet_hash_avg'] = df['hashtags'].apply(self.get_list_avg)
+        # final_df.favorites_count = np.log10(final_df.favorites_count).replace([-np.inf], -10)
+        # final_df.friends_count = np.log10(final_df.friends_count).replace([-np.inf], -10)
+        # final_df.followers_count = np.log10(final_df.followers_count).replace([-np.inf], -10)
+        # final_df.statuses_count = np.log10(final_df.statuses_count).replace([-np.inf], -10)
+        #
+        # if type == 'train':
+        #     self.scaler = sklearn.preprocessing.StandardScaler()
+        #     self.scaler.fit(final_df)
+        #
+        # kmeans = sklearn.cluster.KMeans(n_clusters=9, random_state=0).fit(self.scaler.transform(final_df))
+        # final_df['cluster'] = kmeans.labels_
+        #
+        # final_df['retweet_hash_avg'] = df['hashtags'].apply(self.get_list_avg)
 
         return final_df
 
