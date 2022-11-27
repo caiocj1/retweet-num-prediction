@@ -37,7 +37,7 @@ class Word2VecMLPModel(LightningModule):
         assert not self.apply_pca, 'Turn off PCA'
         assert self.apply_w2v, 'Turn on Word2Vec'
 
-        self.input = nn.Linear(7 + self.vector_size, self.layer_width)
+        self.input = nn.Linear(14 + self.vector_size, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
@@ -102,7 +102,8 @@ class Word2VecMLPModel(LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
         #lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [8], gamma=0.2)
-        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
+        #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=72)
 
         return [optimizer], [lr_scheduler]
 
