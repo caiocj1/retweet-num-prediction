@@ -4,9 +4,7 @@ import yaml
 
 from models.no_text_mlp import NoTextMLPModel
 from models.w2v_mlp import Word2VecMLPModel
-from models.embed_w2v_mlp import EmbedWord2VecMLPModel
 from models.conv1d_w2v_mlp import ConvWord2VecModel
-from models.transf_w2v_mlp import TransformerModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -42,16 +40,12 @@ if __name__ == '__main__':
 
         # Initialize new model and setup data module
         model = None
-        if args.model == 'NoTextMLP':
+        if args.model == 'mlp':
             model = NoTextMLPModel()
-        elif args.model == 'Word2VecMLP':
+        elif args.model == 'w2v':
             model = Word2VecMLPModel()
-        elif args.model == 'EmbedWord2VecMLP':
-            model = EmbedWord2VecMLPModel()
         elif args.model == 'conv':
             model = ConvWord2VecModel()
-        elif args.model == 'transf':
-            model = TransformerModel()
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints
