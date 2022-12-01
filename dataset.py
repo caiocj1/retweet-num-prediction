@@ -245,7 +245,8 @@ class RetweetDataModule(LightningDataModule):
                     tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
 
                     text_vec = self.word2vec.wv[encoded_words]
-                    text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
+                    # text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
+                    text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0) / tf_idf_coefs.sum()
                     X[i] = np.concatenate([X[i], text_vec])
                 else:
                     X[i] = np.concatenate([X[i], np.zeros((self.word2vec.vector_size,))])

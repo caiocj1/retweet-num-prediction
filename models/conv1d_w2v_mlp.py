@@ -152,7 +152,7 @@ class ConvWord2VecModel(LightningModule):
         optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
         #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
         #lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=64)
-        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=80, eta_min=5e-5)
+        lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=72, eta_min=5e-5)
 
         return [optimizer], [lr_scheduler]
 
