@@ -47,6 +47,10 @@ if __name__ == '__main__':
             model = Word2VecMLPModel()
         elif args.model == 'conv':
             model = ConvWord2VecModel()
+
+        if args.weights_path is not None:
+            model = model.load_from_checkpoint(args.weights_path)
+
         data_module.setup(stage='fit', k=k)
 
         # Loggers and checkpoints
@@ -67,6 +71,6 @@ if __name__ == '__main__':
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
-        trainer.fit(model, data_module, ckpt_path=args.weights_path)
+        trainer.fit(model, data_module)
 
         break
