@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', '-v')
     parser.add_argument('--model', '-m', default='NoTextMLP')
+    parser.add_argument('--weights_path', '-w', default=None)
 
     args = parser.parse_args()
 
@@ -66,6 +67,6 @@ if __name__ == '__main__':
                           val_check_interval=3000,
                           callbacks=[model_ckpt, lr_monitor],
                           logger=logger)
-        trainer.fit(model, data_module)
+        trainer.fit(model, data_module, ckpt_path=args.weights_path)
 
         break
