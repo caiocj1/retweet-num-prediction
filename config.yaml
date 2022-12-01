@@ -2,19 +2,19 @@ Word2VecParams:
   vector_size: 256  # size of word embedding
   w2v_epochs: 4
   embed_dims: 32    # if using embed_w2v model, final size of text vector
-  urls_hashtags_in_text: False
+  urls_hashtags_in_text: True
 
 DatasetParams:
   keep_fts: False
   keep_time: True
-  apply_w2v: False
+  apply_w2v: True
   apply_pca: False  # only works with NoTextMLP, reduces input
   reduced_dims: 5
 
 ModelParams:
   layer_width: 128
   num_layers: 3     # includes input and output layers (must be >= 2)
-  dropout: 0.2      # dropout rate, 0.0 equivalent to no dropout
+  dropout: 0.3      # dropout rate, 0.0 equivalent to no dropout
 
 TrainingParams:
   num_splits: 10    # number of folds for cross validation

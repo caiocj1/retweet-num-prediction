@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
         def __iter__(self):
             if word2vec_params['urls_hashtags_in_text']:
-                for tweet in self.df[['text', 'urls', 'hashtags']].sum(axis=1).to_list():
+                for tweet in self.df[['text', 'hashtags']].sum(axis=1).to_list():
                     yield tweet
             else:
                 for tweet in self.df['text'].to_list():

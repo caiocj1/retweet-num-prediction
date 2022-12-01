@@ -158,7 +158,7 @@ class RetweetDataModule(LightningDataModule):
         final_df['text'] = final_df['text'].apply(str.split)
 
         if self.urls_hashtags_in_text:
-            final_df['text'] = final_df[['text', 'urls', 'hashtags']].sum(axis=1)
+            final_df['text'] = final_df[['text', 'hashtags']].sum(axis=1)
 
         final_df['url_count'] = final_df.urls.apply(len)
         final_df['hashtag_count'] = final_df.hashtags.apply(len)

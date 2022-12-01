@@ -16,7 +16,7 @@ from pytorch_lightning import Trainer
 if __name__ == '__main__':
     # Arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', '-m', default='NoTextMLP')
+    parser.add_argument('--model', '-m', default='mlp')
     parser.add_argument('--weights_path', '-w', required=True)
 
     args = parser.parse_args()
