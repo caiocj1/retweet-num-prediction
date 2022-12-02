@@ -55,7 +55,8 @@ if __name__ == '__main__':
         prediction = torch.cat(test_results).numpy()
         results.append(prediction)
 
-    final_predictions = np.array(results).mean(0)
+    #final_predictions = np.array(results).mean(0)
+    final_predictions = np.array(results).mean(0).around()
 
     test_results_df = pd.DataFrame(data={'retweets_count': final_predictions})
     test_ids = pd.DataFrame(data_module.test_ids)
