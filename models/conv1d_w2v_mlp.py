@@ -76,14 +76,14 @@ class ConvWord2VecModel(LightningModule):
             nn.BatchNorm1d(128),
             nn.ReLU(),
 
-            nn.Conv1d(128, 8, 1),
-            nn.BatchNorm1d(8),
+            nn.Conv1d(128, 4, 1),
+            nn.BatchNorm1d(4),
 
             nn.Flatten()
         )
 
         input_width = 14 if self.keep_time else 7
-        self.input = nn.Linear(input_width + 16, self.layer_width)
+        self.input = nn.Linear(input_width + 8, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
@@ -139,7 +139,7 @@ class ConvWord2VecModel(LightningModule):
 
         prediction = torch.squeeze(self.output(encoding))
 
-        return torch.round(prediction)
+        return prediction
 
     def calc_loss(self, prediction, target):
         loss_func = nn.L1Loss(reduction='none')
