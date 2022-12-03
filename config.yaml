@@ -13,8 +13,8 @@ DatasetParams:
 
 ModelParams:
   layer_width: 128
-  num_layers: 3     # includes input and output layers (must be >= 2)
-  dropout: 0.5      # dropout rate, 0.0 equivalent to no dropout
+  num_layers: 4     # includes input and output layers (must be >= 2)
+  dropout: 0.3      # dropout rate, 0.0 equivalent to no dropout
 
 TrainingParams:
   num_splits: 10    # number of folds for cross validation
