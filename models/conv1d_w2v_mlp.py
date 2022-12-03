@@ -139,7 +139,7 @@ class ConvWord2VecModel(LightningModule):
 
         prediction = torch.squeeze(self.output(encoding))
 
-        return prediction
+        return torch.round(prediction)
 
     def calc_loss(self, prediction, target):
         loss_func = nn.L1Loss(reduction='none')
