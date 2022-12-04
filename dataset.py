@@ -196,8 +196,7 @@ class RetweetDataModule(LightningDataModule):
         # Does text contain 'twitter'?
         def has_twitter(word_list):
             return int('twitter' in word_list)
-
-        final_df['has_twitter'] = df['text'].apply(has_rt)
+        final_df['has_twitter'] = df['text'].apply(has_twitter)
 
         # Add text length
         def text_len(word_list):
