@@ -205,7 +205,7 @@ class RetweetDataModule(LightningDataModule):
             for word in word_list:
                 res += len(word)
             return res
-        final_df['text_len'] = df['text'].apply(tex_len)
+        final_df['text_len'] = df['text'].apply(text_len)
 
         return final_df
 
