@@ -44,8 +44,6 @@ class RetweetDataModule(LightningDataModule):
         if max_samples is not None:
             read_train_df = read_train_df.iloc[:max_samples]
 
-        temp = read_train_df.explode('hashtags')[['hashtags', 'retweets_count']]
-        self.retweet_hash_avg = temp.groupby(['hashtags']).mean().to_dict()['retweets_count']
 
         self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=self.keep_fts)
 
@@ -176,12 +174,6 @@ class RetweetDataModule(LightningDataModule):
 
         return final_df
 
-    def get_list_avg(self, list_obj):
-        sum = 0
-        for hash in list_obj:
-            sum += self.retweet_hash_avg[hash] if hash in self.retweet_hash_avg else -1.0
-        return sum / len(list_obj) if list_obj else -1.0
-
     def feature_engineering(self,
                             df: pd.DataFrame,
                             type: str = 'train'):
@@ -236,7 +228,7 @@ class RetweetDataModule(LightningDataModule):
         else:
             text = self.test_df['text']
         for i in range(len(y)):
-            #text_img = np.zeros((self.vector_size, self.vector_size))
+            text_img = np.zeros((self.vector_size, self.vector_size))
             if hasattr(self, 'word2vec'):
                 encoded_words = [word for word in text.iloc[i] if word in self.word2vec.wv and
                                  word in self.train_dictionary.token2id]
@@ -251,11 +243,11 @@ class RetweetDataModule(LightningDataModule):
                     word_matrix = self.word2vec.wv[encoded_words]
                     text_vec = (word_matrix * tf_idf_coefs[:, None]).sum(0)
 
-                    #text_img = word_matrix.T @ word_matrix
+                    text_img = word_matrix.T @ word_matrix
 
                     X[i] = np.concatenate([X[i], text_vec])
                 else:
                     X[i] = np.concatenate([X[i], np.zeros((self.word2vec.vector_size,))])
-            final_dict[i] = (X[i], y[i])
+            final_dict[i] = (X[i], y[i], text_img)
 
         return final_dict
