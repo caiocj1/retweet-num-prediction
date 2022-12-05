@@ -202,8 +202,8 @@ class RetweetDataModule(LightningDataModule):
         final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
 
         # indicators of keywords
-        final_df["has_macron"] = df["text"].apply(lambda s: ("macron" in s))
-        final_df["has_zemmour"] = df["text"].apply(lambda s: ("zemmour" in s))
+        final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
+        final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
 
         return final_df
 
