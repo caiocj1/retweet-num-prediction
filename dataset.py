@@ -236,7 +236,7 @@ class RetweetDataModule(LightningDataModule):
         else:
             text = self.test_df['text']
         for i in range(len(y)):
-            text_img = np.zeros((self.vector_size, self.vector_size))
+            #text_img = np.zeros((self.vector_size, self.vector_size))
             if hasattr(self, 'word2vec'):
                 encoded_words = [word for word in text.iloc[i] if word in self.word2vec.wv and
                                  word in self.train_dictionary.token2id]
@@ -251,11 +251,11 @@ class RetweetDataModule(LightningDataModule):
                     word_matrix = self.word2vec.wv[encoded_words]
                     text_vec = (word_matrix * tf_idf_coefs[:, None]).sum(0)
 
-                    text_img = word_matrix.T @ word_matrix
+                    #text_img = word_matrix.T @ word_matrix
 
                     X[i] = np.concatenate([X[i], text_vec])
                 else:
                     X[i] = np.concatenate([X[i], np.zeros((self.word2vec.vector_size,))])
-            final_dict[i] = (X[i], y[i], text_img)
+            final_dict[i] = (X[i], y[i])
 
         return final_dict
