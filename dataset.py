@@ -93,6 +93,7 @@ class RetweetDataModule(LightningDataModule):
         word2vec_params = params['Word2VecParams']
         dataset_params = params['DatasetParams']
 
+        self.vector_size = word2vec_params['vector_size']
         self.urls_hashtags_in_text = word2vec_params['urls_hashtags_in_text']
 
         self.keep_fts = dataset_params['keep_fts']
@@ -195,15 +196,15 @@ class RetweetDataModule(LightningDataModule):
 
         # DANILO'S FEATURES -------
         # text features
-        final_df["avg_word_len"] = df["text"].apply(lambda s: np.mean([len(w) for w in s]))
-        final_df["rep_words_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        final_df["rep_chars_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        final_df["max_char_freq"] = df["text"].apply(lambda s: max([s.count(c) for c in set(s)]) / len(s))
-        final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
-
-        # indicators of keywords
-        final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
-        final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
+        # final_df["avg_word_len"] = df["text"].apply(lambda s: np.mean([len(w) for w in s]))
+        # final_df["rep_words_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
+        # final_df["rep_chars_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
+        # final_df["max_char_freq"] = df["text"].apply(lambda s: max([s.count(c) for c in set(s)]) / len(s))
+        # final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
+        #
+        # # indicators of keywords
+        # final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
+        # final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
 
         return final_df
 
@@ -235,8 +236,8 @@ class RetweetDataModule(LightningDataModule):
         else:
             text = self.test_df['text']
         for i in range(len(y)):
+            text_img = np.zeros((self.vector_size, self.vector_size))
             if hasattr(self, 'word2vec'):
-                #encoded_words = [word for word in text.iloc[i].split(' ') if word in self.word2vec.wv and
                 encoded_words = [word for word in text.iloc[i] if word in self.word2vec.wv and
                                  word in self.train_dictionary.token2id]
                 if encoded_words:
@@ -247,12 +248,14 @@ class RetweetDataModule(LightningDataModule):
                         tf_idf_dict = dict(self.tfidf[self.test_corpus[i]])
                     tf_idf_coefs = np.array([tf_idf_dict[key] for key in keys])
 
-                    text_vec = self.word2vec.wv[encoded_words]
-                    text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0)
-                    #text_vec = (text_vec * tf_idf_coefs[:, None]).sum(0) / tf_idf_coefs.sum()
+                    word_matrix = self.word2vec.wv[encoded_words]
+                    text_vec = (word_matrix * tf_idf_coefs[:, None]).sum(0)
+
+                    text_img = word_matrix.T @ word_matrix
+
                     X[i] = np.concatenate([X[i], text_vec])
                 else:
                     X[i] = np.concatenate([X[i], np.zeros((self.word2vec.vector_size,))])
-            final_dict[i] = (X[i], y[i])
+            final_dict[i] = (X[i], y[i], text_img)
 
         return final_dict

@@ -7,13 +7,13 @@ from yaml import SafeLoader
 from collections import OrderedDict
 import gensim
 
-class ConvWord2VecModel(LightningModule):
+class Conv2DWord2VecModel(LightningModule):
 
     def __init__(self):
-        super(ConvWord2VecModel, self).__init__()
+        super(Conv2DWord2VecModel, self).__init__()
         self.read_config()
 
-        self.input_width = 22
+        self.input_width = 15
 
         self.build_model()
 
@@ -41,45 +41,45 @@ class ConvWord2VecModel(LightningModule):
         assert self.apply_w2v, 'Turn on Word2Vec'
 
         self.conv = nn.Sequential(
-            nn.Conv1d(1, 16, 5),
-            nn.BatchNorm1d(16),
+            nn.Conv2d(1, 16, 5),
+            nn.BatchNorm2d(16),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
+            nn.MaxPool2d(2),
             nn.Dropout(p=self.dropout),
 
-            nn.Conv1d(16, 16, 5, stride=2),
-            nn.BatchNorm1d(16),
-            nn.ReLU(),
-
-            nn.Dropout(p=self.dropout),
-
-            nn.Conv1d(16, 64, 5),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-
-            nn.MaxPool1d(2),
-            nn.Dropout(p=self.dropout),
-
-            nn.Conv1d(64, 64, 5, stride=2),
-            nn.BatchNorm1d(64),
+            nn.Conv2d(16, 16, 5, stride=2),
+            nn.BatchNorm2d(16),
             nn.ReLU(),
 
             nn.Dropout(p=self.dropout),
 
-            nn.Conv1d(64, 128, 5),
-            nn.BatchNorm1d(128),
+            nn.Conv2d(16, 64, 5),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
 
-            nn.MaxPool1d(2),
+            nn.MaxPool2d(2),
             nn.Dropout(p=self.dropout),
 
-            nn.Conv1d(128, 128, 3),
-            nn.BatchNorm1d(128),
+            nn.Conv2d(64, 64, 5, stride=2),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
 
-            nn.Conv1d(128, 4, 1),
-            nn.BatchNorm1d(4),
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv2d(64, 128, 5),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2),
+            nn.Dropout(p=self.dropout),
+
+            nn.Conv2d(128, 128, 3),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+
+            nn.Conv2d(128, 4, 1),
+            nn.BatchNorm2d(4),
 
             nn.Flatten()
         )
@@ -130,8 +130,8 @@ class ConvWord2VecModel(LightningModule):
         return loss, metrics
 
     def forward(self, batch):
-        text_vec = batch[0][:, None, -self.vector_size:].float()
-        text_enc = self.conv(text_vec)
+        text_img = batch[2][:, None].float()
+        text_enc = self.conv(text_img)
 
         input = torch.concat([batch[0][:, :-self.vector_size].float(), text_enc], dim=1)
         encoding = self.input(input)
