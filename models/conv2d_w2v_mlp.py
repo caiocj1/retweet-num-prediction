@@ -45,7 +45,7 @@ class Conv2DWord2VecModel(LightningModule):
             nn.BatchNorm2d(16),
             nn.ReLU(),
 
-            nn.MaxPool2d(2),
+            #nn.MaxPool2d(2),
             nn.Dropout(p=self.dropout),
 
             nn.Conv2d(16, 16, 5, stride=2),
@@ -58,7 +58,7 @@ class Conv2DWord2VecModel(LightningModule):
             nn.BatchNorm2d(64),
             nn.ReLU(),
 
-            nn.MaxPool2d(2),
+            #nn.MaxPool2d(2),
             nn.Dropout(p=self.dropout),
 
             nn.Conv2d(64, 64, 5, stride=2),
@@ -71,10 +71,10 @@ class Conv2DWord2VecModel(LightningModule):
             nn.BatchNorm2d(128),
             nn.ReLU(),
 
-            nn.MaxPool2d(2),
+            #nn.MaxPool2d(2),
             nn.Dropout(p=self.dropout),
 
-            nn.Conv2d(128, 128, 3),
+            nn.Conv2d(128, 128, 5),
             nn.BatchNorm2d(128),
             nn.ReLU(),
 
