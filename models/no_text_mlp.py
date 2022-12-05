@@ -31,7 +31,7 @@ class NoTextMLPModel(LightningModule):
         if self.apply_pca:
             self.input = nn.Linear(self.reduced_dims, self.layer_width)
         else:
-            self.input = nn.Linear(14, self.layer_width)
+            self.input = nn.Linear(15, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
@@ -77,7 +77,7 @@ class NoTextMLPModel(LightningModule):
         return loss, metrics
 
     def forward(self, batch):
-        encoding = self.input(batch[0].float())
+        encoding = self.input(batch[0][:, :15].float())
 
         encoding = self.hidden_layers(self.relu(encoding))
 
