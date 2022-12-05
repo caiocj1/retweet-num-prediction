@@ -33,8 +33,8 @@ if __name__ == '__main__':
     data_module = RetweetDataModule(
         split_seed=training_params['split_seed'],
         num_splits=training_params['num_splits'],
-        batch_size=32,
-        num_workers=8,
+        batch_size=16,
+        num_workers=4,
         max_samples=None)
 
     for k in range(training_params['num_splits']):
