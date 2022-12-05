@@ -13,7 +13,7 @@ class ConvWord2VecModel(LightningModule):
         super(ConvWord2VecModel, self).__init__()
         self.read_config()
 
-        self.input_width = 22
+        self.input_width = 15
 
         self.build_model()
 

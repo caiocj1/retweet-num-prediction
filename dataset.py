@@ -196,15 +196,15 @@ class RetweetDataModule(LightningDataModule):
 
         # DANILO'S FEATURES -------
         # text features
-        final_df["avg_word_len"] = df["text"].apply(lambda s: np.mean([len(w) for w in s]))
-        final_df["rep_words_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        final_df["rep_chars_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        final_df["max_char_freq"] = df["text"].apply(lambda s: max([s.count(c) for c in set(s)]) / len(s))
-        final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
-
-        # indicators of keywords
-        final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
-        final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
+        # final_df["avg_word_len"] = df["text"].apply(lambda s: np.mean([len(w) for w in s]))
+        # final_df["rep_words_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
+        # final_df["rep_chars_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
+        # final_df["max_char_freq"] = df["text"].apply(lambda s: max([s.count(c) for c in set(s)]) / len(s))
+        # final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
+        #
+        # # indicators of keywords
+        # final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
+        # final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
 
         return final_df
 
