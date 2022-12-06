@@ -47,7 +47,6 @@ if __name__ == '__main__':
     for ckpt_name in os.listdir(args.weights_path):
         ckpt_path = os.path.join(args.weights_path, ckpt_name)
 
-        # data_module.prepare_data()
         data_module.setup(stage='predict')
 
         test_results = trainer.predict(model, data_module, ckpt_path=ckpt_path, return_predictions=True)
@@ -55,12 +54,13 @@ if __name__ == '__main__':
         prediction = torch.cat(test_results).numpy()
         results.append(prediction)
 
-    #final_predictions = np.array(results).mean(0)
+    # Do average of predictions for each checkpoint and round to nearest integer
     final_predictions = np.around(np.array(results).mean(0))
 
     test_results_df = pd.DataFrame(data={'retweets_count': final_predictions})
     test_ids = pd.DataFrame(data_module.test_ids)
 
+    # Save submission
     submission = pd.concat([test_ids, test_results_df], axis=1)
     dataset_path = os.getenv('DATASET_PATH')
     submission_path = os.path.join(dataset_path, 'submission.csv')

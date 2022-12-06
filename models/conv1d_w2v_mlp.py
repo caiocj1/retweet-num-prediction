@@ -101,6 +101,12 @@ class ConvWord2VecModel(LightningModule):
         self.relu = nn.ReLU()
 
     def training_step(self, batch, batch_idx):
+        """
+        Perform train step.
+        :param batch: tuple (X, y), where the shape of X is (batch_size, 23) and of y is (batch_size)
+        :param batch_idx: index of current batch, non applicable here
+        :return: mean loss
+        """
         loss, metrics = self._shared_step(batch)
 
         loss = loss.mean()
@@ -110,6 +116,12 @@ class ConvWord2VecModel(LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """
+        Perform validation step.
+        :param batch: tuple (X, y), where the shape of X is (batch_size, 23) and of y is (batch_size)
+        :param batch_idx: index of current batch, non applicable here
+        :return: mean loss
+        """
         loss, metrics = self._shared_step(batch)
 
         loss = loss.mean()
@@ -119,6 +131,12 @@ class ConvWord2VecModel(LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """
+        Perform test step.
+        :param batch: tuple (X, y), where the shape of X is (batch_size, 23) and of y is (batch_size)
+        :param batch_idx: index of current batch, non applicable here
+        :return: mean loss
+        """
         loss, metrics = self._shared_step(batch)
 
         loss = loss.mean()
@@ -159,6 +177,12 @@ class ConvWord2VecModel(LightningModule):
         return prediction
 
     def calc_loss(self, prediction, target):
+        """
+        Calculate L1 loss.
+        :param prediction: tensor of predictions (batch_size)
+        :param target: tensor of ground truths (batch_size)
+        :return: tensor of losses (batch_size)
+        """
         loss_func = nn.L1Loss(reduction='none')
 
         loss = loss_func(prediction.float(), target.float())
@@ -176,6 +200,12 @@ class ConvWord2VecModel(LightningModule):
         return [optimizer], [lr_scheduler]
 
     def calc_metrics(self, prediction, target):
+        """
+        Calculate useful metrics. Not applicable here (MAE is already loss).
+        :param prediction: tensor of predictions (batch_size)
+        :param target: tensor of ground truths (batch_size)
+        :return: metric dictionary
+        """
         metrics = {}
 
         metrics['mae'] = torch.abs(prediction - target).mean()
@@ -183,6 +213,12 @@ class ConvWord2VecModel(LightningModule):
         return metrics
 
     def log_metrics(self, metrics: dict, type: str):
+        """
+        Log metrics on Tensorboard.
+        :param metrics: metric dictionary
+        :param type: check if training or validation metrics
+        :return: None
+        """
         on_step = True if type == 'train' else False
 
         for key in metrics:
