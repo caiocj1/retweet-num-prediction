@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     tweets = Corpus(train_df)
     model = gensim.models.Word2Vec(tweets,
-                                   min_count=1,
+                                   min_count=3,
                                    vector_size=word2vec_params['vector_size'],
                                    workers=4,
                                    epochs=word2vec_params['w2v_epochs'])
