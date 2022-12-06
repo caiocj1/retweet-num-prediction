@@ -5,7 +5,6 @@ import yaml
 from models.no_text_mlp import NoTextMLPModel
 from models.w2v_mlp import Word2VecMLPModel
 from models.conv1d_w2v_mlp import ConvWord2VecModel
-from models.conv2d_w2v_mlp import Conv2DWord2VecModel
 from dataset import RetweetDataModule
 
 import torch.cuda
@@ -49,8 +48,6 @@ if __name__ == '__main__':
             model = Word2VecMLPModel()
         elif args.model == 'conv':
             model = ConvWord2VecModel()
-        elif args.model == 'conv2d':
-            model = Conv2DWord2VecModel()
 
         if args.weights_path is not None:
             model = model.load_from_checkpoint(args.weights_path)

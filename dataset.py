@@ -44,8 +44,7 @@ class RetweetDataModule(LightningDataModule):
         if max_samples is not None:
             read_train_df = read_train_df.iloc[:max_samples]
 
-
-        self.train_df = self.format_df(read_train_df, keep_time=self.keep_time, keep_fts=self.keep_fts)
+        self.train_df = self.format_df(read_train_df)
 
         self.train_df_input = self.feature_engineering(self.train_df, type='train')
 
@@ -59,7 +58,7 @@ class RetweetDataModule(LightningDataModule):
         read_test_df.hashtags = read_test_df.hashtags.apply(ast.literal_eval)
         self.test_ids = read_test_df['TweetID']
 
-        self.test_df = self.format_df(read_test_df, type='test', keep_time=self.keep_time, keep_fts=self.keep_fts)
+        self.test_df = self.format_df(read_test_df, type='test')
 
         self.test_df_input = self.feature_engineering(self.test_df, type='test')
 
@@ -77,14 +76,11 @@ class RetweetDataModule(LightningDataModule):
 
             self.tfidf = gensim.models.TfidfModel(self.train_corpus)
 
-
-        # Fit eventual PCA
-        if self.apply_pca:
-            self.pca = PCA(self.reduced_dims)
-            train_df_normalized = (self.train_df_input.values - self.train_mean) / self.train_std
-            self.pca.fit(train_df_normalized)
-
     def read_config(self):
+        """
+        Read configuration file with hyperparameters.
+        :return: None
+        """
         config_path = os.path.join(os.getcwd(), 'config.yaml')
         with open(config_path) as f:
             params = yaml.load(f, Loader=SafeLoader)
@@ -94,13 +90,15 @@ class RetweetDataModule(LightningDataModule):
         self.vector_size = word2vec_params['vector_size']
         self.urls_hashtags_in_text = word2vec_params['urls_hashtags_in_text']
 
-        self.keep_fts = dataset_params['keep_fts']
-        self.keep_time = dataset_params['keep_time']
         self.apply_w2v = dataset_params['apply_w2v']
-        self.apply_pca = dataset_params['apply_pca']
-        self.reduced_dims = dataset_params['reduced_dims']
 
     def setup(self, stage: str = None, k: int = 0):
+        """
+        Build data dictionaries for training or prediction.
+        :param stage: 'fit' for training, 'predict' for prediction
+        :param k: which fold to train on
+        :return: None
+        """
         assert 0 <= k < self.hparams.num_splits, "incorrect fold number"
 
         if stage == 'fit':
@@ -130,18 +128,33 @@ class RetweetDataModule(LightningDataModule):
             self.data_predict = predict_dict
 
     def train_dataloader(self):
+        """
+        Uses train dictionary (output of format_X) to return train DataLoader, that will be fed to pytorch lightning's
+        Trainer.
+        :return: train DataLoader
+        """
         return DataLoader(dataset=self.data_train,
                           batch_size=self.hparams.batch_size,
                           num_workers=self.hparams.num_workers,
                           shuffle=True)
 
     def val_dataloader(self):
+        """
+        Uses val dictionary (output of format_X) to return val DataLoader, that will be fed to pytorch lightning's
+        Trainer.
+        :return: train DataLoader
+        """
         return DataLoader(dataset=self.data_val,
                           batch_size=self.hparams.batch_size,
                           num_workers=self.hparams.num_workers,
                           shuffle=False)
 
     def predict_dataloader(self):
+        """
+        Uses predict dictionary (output of format_X) to return predict DataLoader, that will be fed to pytorch
+        lightning's Trainer.
+        :return: predict DataLoader
+        """
         return DataLoader(dataset=self.data_predict,
                           batch_size=self.hparams.batch_size,
                           num_workers=self.hparams.num_workers,
@@ -149,9 +162,13 @@ class RetweetDataModule(LightningDataModule):
 
     def format_df(self,
                   df: pd.DataFrame,
-                  type: str = 'train',
-                  keep_time: bool = False,
-                  keep_fts: bool = False):
+                  type: str = 'train'):
+        """
+        Formats the .csv read into an initial dataframe with base features.
+        :param df: dataframe read from a csv file
+        :param type: whether we are treating a training or test set
+        :return: correctly formatted dataframe
+        """
         final_df = df.drop(['TweetID', 'mentions', 'timestamp'], axis=1)
 
         final_df['text'] = final_df['text'].apply(str.split)
@@ -162,21 +179,28 @@ class RetweetDataModule(LightningDataModule):
         final_df['url_count'] = final_df.urls.apply(len)
         final_df['hashtag_count'] = final_df.hashtags.apply(len)
 
-        if keep_time:
-            timestamps = df.timestamp // 1000
-            timestamps = timestamps.apply(datetime.datetime.fromtimestamp).apply(datetime.datetime.timetuple)
+        # Parse timestamps
+        timestamps = df.timestamp // 1000
+        timestamps = timestamps.apply(datetime.datetime.fromtimestamp).apply(datetime.datetime.timetuple)
 
-            time_df = pd.DataFrame(timestamps.tolist(), index=df.index,
-                                   columns=['tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min', 'tm_sec', 'tm_wday',
-                                            'tm_yday', 'tm_isdst'])
+        time_df = pd.DataFrame(timestamps.tolist(), index=df.index,
+                               columns=['tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min', 'tm_sec', 'tm_wday',
+                                        'tm_yday', 'tm_isdst'])
 
-            final_df = pd.concat([final_df, time_df], axis=1)
+        final_df = pd.concat([final_df, time_df], axis=1)
 
         return final_df
 
     def feature_engineering(self,
                             df: pd.DataFrame,
                             type: str = 'train'):
+        """
+        Adds non-trivial features to dataframe, drops target/text/useless columns, so as to prepare the input to the
+        deep learning model.
+        :param df: formatted dataframe from format_df
+        :param type: whether we are treating a training or test set
+        :return: correctly formatted input dataframe
+        """
         final_df = df.drop(['text', 'urls', 'hashtags', 'tm_sec', 'tm_isdst'], axis=1)
         if type == 'train':
             final_df = final_df.drop('retweets_count', axis=1)
@@ -186,17 +210,11 @@ class RetweetDataModule(LightningDataModule):
             return int('rt' in word_list)
         final_df['has_rt'] = df['text'].apply(has_rt)
 
-        # DANILO'S FEATURES -------
-        # text features
-        # final_df["avg_word_len"] = df["text"].apply(lambda s: np.mean([len(w) for w in s]))
-        # final_df["rep_words_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        # final_df["rep_chars_freq"] = df["text"].apply(lambda s: np.mean(len(list(set(s))) / len(s)))
-        # final_df["max_char_freq"] = df["text"].apply(lambda s: max([s.count(c) for c in set(s)]) / len(s))
-        # final_df["avg_word_count"] = df["text"].apply(lambda s: len(s))
-        #
-        # # indicators of keywords
-        # final_df["has_macron"] = df["text"].apply(lambda s: int("macron" in s))
-        # final_df["has_zemmour"] = df["text"].apply(lambda s: int("zemmour" in s))
+        # Log features
+        final_df['favorites_count_log'] = np.log10(final_df['favorites_count']).replace([-np.inf], -1)
+        final_df['followers_count_log'] = np.log10(final_df['followers_count']).replace([-np.inf], -1)
+        final_df['statuses_count_log'] = np.log10(final_df['statuses_count']).replace([-np.inf], -1)
+        final_df['friends_count_log'] = np.log10(final_df['friends_count']).replace([-np.inf], -1)
 
         return final_df
 
@@ -206,6 +224,16 @@ class RetweetDataModule(LightningDataModule):
                  std: np.ndarray,
                  type: str = 'train',
                  indexes: np.ndarray = None):
+        """
+        Prepares a dictionary in which to each key is associated a tuple of (input vector, retweet count ground truth),
+        from the rows of the dataframe given.
+        :param df: correctly formatted input dataframe from feature_engineering
+        :param mean: vector with which we normalize the data
+        :param std: vector with which we normalize the data
+        :param type: whether we are treating a training or test set
+        :param indexes: if treating training set, separate train and validation
+        :return: correctly dictionary to be passed to DataLoader
+        """
         # Get inputs
         X = (df.values - mean) / std
 
@@ -227,8 +255,8 @@ class RetweetDataModule(LightningDataModule):
             text = self.train_df['text'].iloc[indexes]
         else:
             text = self.test_df['text']
+
         for i in range(len(y)):
-            #text_img = np.zeros((self.vector_size, self.vector_size))
             if hasattr(self, 'word2vec'):
                 encoded_words = [word for word in text.iloc[i] if word in self.word2vec.wv and
                                  word in self.train_dictionary.token2id]
@@ -243,11 +271,10 @@ class RetweetDataModule(LightningDataModule):
                     word_matrix = self.word2vec.wv[encoded_words]
                     text_vec = (word_matrix * tf_idf_coefs[:, None]).sum(0)
 
-                    #text_img = word_matrix.T @ word_matrix
-
                     X[i] = np.concatenate([X[i], text_vec])
                 else:
                     X[i] = np.concatenate([X[i], np.zeros((self.word2vec.vector_size,))])
+
             final_dict[i] = (X[i], y[i])
 
         return final_dict

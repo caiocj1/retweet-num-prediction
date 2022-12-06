@@ -13,11 +13,15 @@ class ConvWord2VecModel(LightningModule):
         super(ConvWord2VecModel, self).__init__()
         self.read_config()
 
-        self.input_width = 15
+        self.input_width = 19
 
         self.build_model()
 
     def read_config(self):
+        """
+        Read configuration file with hyperparameters.
+        :return: None
+        """
         config_path = os.path.join(os.getcwd(), './config.yaml')
         with open(config_path) as f:
             params = yaml.load(f, Loader=SafeLoader)
@@ -27,17 +31,17 @@ class ConvWord2VecModel(LightningModule):
 
         self.vector_size = word2vec_params['vector_size']
 
-        self.keep_time = dataset_params['keep_time']
         self.apply_w2v = dataset_params['apply_w2v']
-        self.apply_pca = dataset_params['apply_pca']
-        self.reduced_dims = dataset_params['reduced_dims']
 
         self.layer_width = model_params['layer_width']
         self.num_layers = model_params['num_layers']
         self.dropout = model_params['dropout']
 
     def build_model(self):
-        assert not self.apply_pca, 'Turn off PCA'
+        """
+        Build model's layers.
+        :return: None
+        """
         assert self.apply_w2v, 'Turn on Word2Vec'
 
         self.conv = nn.Sequential(
@@ -121,6 +125,12 @@ class ConvWord2VecModel(LightningModule):
         return loss
 
     def _shared_step(self, batch):
+        """
+        Get predictions, calculate loss and eventually useful metrics (here the only metric is MAE which is the same as
+        the loss function).
+        :param batch: tuple (X, y), where the shape of X is (batch_size, 23) and of y is (batch_size)
+        :return: loss: tensor of shape (batch_size), metrics: dictionary with metrics
+        """
         prediction = self.forward(batch)
 
         loss = self.calc_loss(prediction, batch[1])
@@ -130,6 +140,12 @@ class ConvWord2VecModel(LightningModule):
         return loss, metrics
 
     def forward(self, batch):
+        """
+        Pass text embedding through convolutional layers. Concatenate result with base features and pass through final
+        MLP to get predictions of a batch.
+        :param batch: tuple (X, y), where the shape of X is (batch_size, 23) and of y is (batch_size)
+        :return: predictions: tensor of shape (batch_size)
+        """
         text_vec = batch[0][:, None, -self.vector_size:].float()
         text_enc = self.conv(text_vec)
 
@@ -150,9 +166,11 @@ class ConvWord2VecModel(LightningModule):
         return loss
 
     def configure_optimizers(self):
+        """
+        Selection of gradient descent algorithm and learning rate scheduler.
+        :return: optimizer algorithm, learning rate scheduler
+        """
         optimizer = torch.optim.AdamW(self.parameters(), lr=1e-3)
-        #lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-        #lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=64)
         lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=72, eta_min=5e-5)
 
         return [optimizer], [lr_scheduler]

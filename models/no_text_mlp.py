@@ -20,18 +20,12 @@ class NoTextMLPModel(LightningModule):
         dataset_params = params['DatasetParams']
         model_params = params['ModelParams']
 
-        self.apply_pca = dataset_params['apply_pca']
-        self.reduced_dims = dataset_params['reduced_dims']
-
         self.layer_width = model_params['layer_width']
         self.num_layers = model_params['num_layers']
         self.dropout = model_params['dropout']
 
     def build_model(self):
-        if self.apply_pca:
-            self.input = nn.Linear(self.reduced_dims, self.layer_width)
-        else:
-            self.input = nn.Linear(15, self.layer_width)
+        self.input = nn.Linear(15, self.layer_width)
 
         hidden_layers_dict = OrderedDict()
         for i in range(self.num_layers - 2):
