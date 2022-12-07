@@ -15,6 +15,8 @@ that gave the best result in the leaderboard as explained in the report, for Caf
 
 To create the environment, run ``conda env create -f environment.yaml``.
 
+Set data set location with ``conda env config vars set DATASET_PATH=<path_to_csv_files>``.
+
 To track training, ``tensorboard --logdir lightning_logs --bind_all``.
 
 ## Launch training
