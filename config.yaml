@@ -8,8 +8,8 @@ DatasetParams:
                     # text embedding. Must be true for CafayNet.
 
 ModelParams:
-  layer_width: 128
-  num_layers: 5     # includes input and output layers (must be >= 2)
+  layer_width: 196
+  num_layers: 4     # includes input and output layers (must be >= 2)
   dropout: 0.3      # dropout rate, 0.0 equivalent to no dropout
 
 TrainingParams:
